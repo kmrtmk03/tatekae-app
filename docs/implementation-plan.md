@@ -16,6 +16,46 @@
 
 ---
 
+## 進捗状況（引き継ぎ用・2026-09-21時点）
+
+他セッションへの引き継ぎ用に、着手済み/未着手を記録する。作業を再開する際はこの節を更新すること。
+
+| Phase | 状態 | 備考 |
+| --- | --- | --- |
+| Phase 0: プロジェクト初期化 | ✅ 完了 | |
+| Phase 1: 型とデータ層 | ⬜ 未着手 | 次に着手予定 |
+| Phase 2: 入力フォーム（F-01） | ⬜ 未着手 | |
+| Phase 3: 一覧表示・清算チェック・削除（F-02, F-03, F-05） | ⬜ 未着手 | |
+| Phase 4: 未清算合計の表示（F-04） | ⬜ 未着手 | |
+| Phase 5: スタイリングと UX | ⬜ 未着手 | |
+| Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
+| Phase 7: デプロイ | ⬜ 未着手 | |
+| Phase 8: 追加機能（MVP後） | ⬜ 未着手 | |
+| Phase 9: Firebase への移行準備 | ⬜ 未着手 | |
+
+### 当初計画からの変更点
+
+- **パッケージマネージャー**: npm ではなく **pnpm** に統一済み（`pnpm-lock.yaml` が正、`package-lock.json` は削除済み）。以降のコマンドは `pnpm install` / `pnpm run dev` などを使うこと。
+- **Lint/フォーマッタ**: 当初想定の Prettier + ESLint ではなく、`npm create vite@latest` 最新版が標準採用する **oxlint**（`.oxlintrc.json`）になっている。`pnpm run lint` で実行可能。
+- **技術スタック**: React は 18+ 想定だったが、実際にインストールされたのは **React 19系**。
+
+### Phase 0 完了内容
+- Vite + React + TypeScript でスキャフォールド、サンプル（ロゴ・カウンタ・デフォルトCSS）は削除済み
+- `pnpm run dev` / `pnpm run build` / `pnpm run lint` 動作確認済み
+
+### Phase 6 完了内容
+- `vite-plugin-pwa` 導入、`registerType: 'autoUpdate'` で設定
+- アイコン生成済み（`public/icon-192.png`, `public/icon-512.png` = purpose `any maskable`, `public/apple-touch-icon.png`）。画像変換ツールが無い環境だったため Node の `zlib` のみで自前PNG生成（シンプルな「¥」マーク）
+- `index.html` に `theme-color` / `apple-mobile-web-app-*` / `viewport-fit=cover` を追加
+- `pnpm run build` で `manifest.webmanifest` / `sw.js` / `workbox-*.js` の生成を確認
+- `pnpm run preview` + Playwright(Chromium) で Service Worker が `activated` になること、オフラインでもページが表示されることを実機相当で確認
+- **未検証**: 実機のホーム画面への追加、Lighthouse の PWA 監査（ツール未実行）
+
+### 次にやること
+- Phase 1（型とデータ層: `Expense`型・`storage.ts`・`summary.ts`・`format.ts`・`useExpenses`）から再開する
+
+---
+
 ## 2. 要件整理
 
 ### 2.1 機能要件（MVP）
@@ -97,12 +137,13 @@ export type Expense = {
 | 分類 | 採用 | 理由 |
 | --- | --- | --- |
 | ビルド | Vite | 起動が速く、PWA プラグインが充実 |
-| UI | React 18+ | 要件どおり |
+| UI | React 18+（実際は19系を採用） | 要件どおり |
 | 言語 | TypeScript | データ構造が明確な本アプリと相性が良い |
-| PWA | `vite-plugin-pwa` | manifest 生成と Service Worker 生成を任せられる |
+| PWA | `vite-plugin-pwa` | manifest 生成と Service Worker 生成を任せられる（導入済み） |
+| パッケージ管理 | pnpm | リモートで先行導入されたため統一（当初は npm 想定） |
 | 状態管理 | React の `useState` + Context | 規模が小さく、外部ライブラリは不要 |
 | スタイル | CSS Modules | 追加依存なしでスコープが分かれる |
-| フォーマッタ | Prettier + ESLint | Vite のテンプレートに同梱 |
+| フォーマッタ | oxlint | 最新の Vite テンプレートに同梱（当初想定の Prettier + ESLint から変更） |
 | テスト | Vitest（任意） | 集計ロジックの単体テストに使う |
 
 ---
@@ -148,7 +189,7 @@ tatekae-app/
 
 ## 6. 実装フェーズ
 
-### Phase 0: プロジェクト初期化
+### Phase 0: プロジェクト初期化 ✅ 完了
 
 1. Vite プロジェクトを作成する
    ```bash
@@ -258,7 +299,7 @@ tatekae-app/
 
 ---
 
-### Phase 6: PWA 化（F-07）
+### Phase 6: PWA 化（F-07） ✅ 完了
 
 1. プラグインを導入する
    ```bash
@@ -380,7 +421,7 @@ Phase 4 を終えた時点で「立て替えを記録して未清算合計が見
 ## 8. チェックリスト
 
 ### MVP
-- [ ] Vite + React プロジェクトが起動する
+- [x] Vite + React プロジェクトが起動する
 - [ ] `Expense` 型を定義した
 - [ ] localStorage の読み書きができる
 - [ ] 日付・項目名・金額を入力して登録できる
@@ -392,12 +433,12 @@ Phase 4 を終えた時点で「立て替えを記録して未清算合計が見
 - [ ] リロードしてもデータが残る
 
 ### PWA
-- [ ] manifest.json が生成されている
-- [ ] アイコン（192 / 512 / maskable）を用意した
-- [ ] Service Worker が登録される
-- [ ] オフラインで起動できる
-- [ ] ホーム画面に追加できる
-- [ ] Lighthouse の PWA 監査を通る
+- [x] manifest.json が生成されている
+- [x] アイコン（192 / 512 / maskable）を用意した
+- [x] Service Worker が登録される
+- [x] オフラインで起動できる
+- [ ] ホーム画面に追加できる（未検証: 実機での確認が必要）
+- [ ] Lighthouse の PWA 監査を通る（未実行）
 
 ### 公開
 - [ ] HTTPS でデプロイされている
