@@ -1,7 +1,11 @@
 .item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  padding: 8px 8px 8px 4px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .checkboxLabel {
@@ -13,20 +17,68 @@
   cursor: pointer;
 }
 
-.date {
-  white-space: nowrap;
+.checkboxLabel input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .title {
-  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.amount {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  white-space: nowrap;
+  padding-left: 8px;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-faint);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.deleteButton:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 .settled .title {
   text-decoration: line-through;
 }
 
-.settled .date,
 .settled .title,
+.settled .date,
 .settled .amount {
-  color: #888;
+  color: var(--color-text-faint);
 }

@@ -27,11 +27,18 @@ export function ExpenseItem({ expense, onToggleSettled, onRemove }: Props) {
           onChange={() => onToggleSettled(expense.id)}
         />
       </label>
-      <span className={styles.date}>{formatDate(expense.date)}</span>
-      <span className={styles.title}>{expense.title}</span>
+      <div className={styles.content}>
+        <span className={styles.title}>{expense.title}</span>
+        <span className={styles.date}>{formatDate(expense.date)}</span>
+      </div>
       <span className={styles.amount}>{formatAmount(expense.amount)}</span>
-      <button type="button" onClick={handleRemove}>
-        削除
+      <button
+        type="button"
+        className={styles.deleteButton}
+        onClick={handleRemove}
+        aria-label={`${expense.title}を削除`}
+      >
+        ×
       </button>
     </li>
   );

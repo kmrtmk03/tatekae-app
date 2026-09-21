@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { NewExpenseInput } from "../hooks/useExpenses";
+import styles from "./ExpenseForm.module.css";
 
 type Props = {
   onSubmit: (input: NewExpenseInput) => void;
@@ -51,44 +52,65 @@ export function ExpenseForm({ onSubmit }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div>
-        <label htmlFor="expense-date">日付</label>
-        <input
-          id="expense-date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="expense-title">項目名</label>
+    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="expense-title">
+          項目名
+        </label>
         <input
           id="expense-title"
+          className={styles.input}
           type="text"
           ref={titleInputRef}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="例: 飲み会代"
         />
-        {errors.title && <p role="alert">{errors.title}</p>}
+        {errors.title && (
+          <p className={styles.errorText} role="alert">
+            {errors.title}
+          </p>
+        )}
       </div>
 
-      <div>
-        <label htmlFor="expense-amount">金額</label>
-        <input
-          id="expense-amount"
-          type="number"
-          inputMode="numeric"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="例: 3000"
-        />
-        {errors.amount && <p role="alert">{errors.amount}</p>}
-      </div>
+      <div className={styles.row}>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="expense-date">
+            日付
+          </label>
+          <input
+            id="expense-date"
+            className={styles.input}
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
 
-      <button type="submit">登録</button>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="expense-amount">
+            金額
+          </label>
+          <input
+            id="expense-amount"
+            className={styles.input}
+            type="number"
+            inputMode="numeric"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="例: 3000"
+          />
+        </div>
+      </div>
+      {errors.amount && (
+        <p className={styles.errorText} role="alert">
+          {errors.amount}
+        </p>
+      )}
+
+      <button className={styles.submit} type="submit">
+        登録する
+      </button>
     </form>
   );
 }

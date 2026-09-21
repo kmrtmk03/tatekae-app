@@ -1,5 +1,6 @@
 import type { Expense } from "../types/expense";
 import { ExpenseItem } from "./ExpenseItem";
+import styles from "./ExpenseList.module.css";
 
 type Props = {
   expenses: Expense[];
@@ -14,13 +15,13 @@ function compareExpenses(a: Expense, b: Expense): number {
 
 export function ExpenseList({ expenses, onToggleSettled, onRemove }: Props) {
   if (expenses.length === 0) {
-    return <p>まだ記録がありません</p>;
+    return <p className={styles.empty}>まだ記録がありません</p>;
   }
 
   const sorted = [...expenses].sort(compareExpenses);
 
   return (
-    <ul>
+    <ul className={styles.list}>
       {sorted.map((expense) => (
         <ExpenseItem
           key={expense.id}
