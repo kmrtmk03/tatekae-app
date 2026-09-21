@@ -52,20 +52,30 @@
   padding-left: 8px;
 }
 
+.editButton,
 .deleteButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
+  min-width: 40px;
   min-height: 44px;
   border: none;
   background: transparent;
   color: var(--color-text-faint);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   border-radius: 50%;
   transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.editButton:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.deleteButton {
+  font-size: 1.25rem;
 }
 
 .deleteButton:hover {

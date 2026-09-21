@@ -14,6 +14,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .label {
@@ -23,6 +24,8 @@
 }
 
 .input {
+  width: 100%;
+  min-width: 0;
   height: 44px;
   padding: 0 12px;
   border: 1px solid var(--color-border);

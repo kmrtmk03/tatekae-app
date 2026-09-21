@@ -5,10 +5,16 @@ import styles from "./ExpenseItem.module.css";
 type Props = {
   expense: Expense;
   onToggleSettled: (id: string) => void;
+  onEdit: (expense: Expense) => void;
   onRemove: (id: string) => void;
 };
 
-export function ExpenseItem({ expense, onToggleSettled, onRemove }: Props) {
+export function ExpenseItem({
+  expense,
+  onToggleSettled,
+  onEdit,
+  onRemove,
+}: Props) {
   const checkboxId = `settled-${expense.id}`;
 
   function handleRemove() {
@@ -32,6 +38,14 @@ export function ExpenseItem({ expense, onToggleSettled, onRemove }: Props) {
         <span className={styles.date}>{formatDate(expense.date)}</span>
       </div>
       <span className={styles.amount}>{formatAmount(expense.amount)}</span>
+      <button
+        type="button"
+        className={styles.editButton}
+        onClick={() => onEdit(expense)}
+        aria-label={`${expense.title}を編集`}
+      >
+        ✎
+      </button>
       <button
         type="button"
         className={styles.deleteButton}

@@ -1,15 +1,11 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { NewExpenseInput } from "../hooks/useExpenses";
+import { validateExpenseInput } from "../lib/validation";
 import styles from "./ExpenseForm.module.css";
 
 type Props = {
   onSubmit: (input: NewExpenseInput) => void;
-};
-
-type Errors = {
-  title?: string;
-  amount?: string;
 };
 
 function todayISO(): string {
@@ -24,27 +20,19 @@ export function ExpenseForm({ onSubmit }: Props) {
   const [date, setDate] = useState(todayISO);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<ReturnType<typeof validateExpenseInput>>(
+    {},
+  );
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const trimmedTitle = title.trim();
-    const amountValue = Number(amount);
-    const nextErrors: Errors = {};
-
-    if (trimmedTitle === "") {
-      nextErrors.title = "項目名を入力してください";
-    }
-    if (amount.trim() === "" || Number.isNaN(amountValue) || amountValue <= 0) {
-      nextErrors.amount = "金額は1円以上の数値を入力してください";
-    }
-
+    const nextErrors = validateExpenseInput(title, amount);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    onSubmit({ date, title: trimmedTitle, amount: amountValue });
+    onSubmit({ date, title: title.trim(), amount: Number(amount) });
 
     setTitle("");
     setAmount("");

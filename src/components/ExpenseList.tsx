@@ -5,6 +5,7 @@ import styles from "./ExpenseList.module.css";
 type Props = {
   expenses: Expense[];
   onToggleSettled: (id: string) => void;
+  onEdit: (expense: Expense) => void;
   onRemove: (id: string) => void;
   emptyMessage?: string;
 };
@@ -17,6 +18,7 @@ function compareExpenses(a: Expense, b: Expense): number {
 export function ExpenseList({
   expenses,
   onToggleSettled,
+  onEdit,
   onRemove,
   emptyMessage = "まだ記録がありません",
 }: Props) {
@@ -33,6 +35,7 @@ export function ExpenseList({
           key={expense.id}
           expense={expense}
           onToggleSettled={onToggleSettled}
+          onEdit={onEdit}
           onRemove={onRemove}
         />
       ))}
