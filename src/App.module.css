@@ -45,4 +45,5 @@
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
+  overflow-x: hidden;
 }

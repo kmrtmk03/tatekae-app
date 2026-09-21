@@ -176,6 +176,11 @@
   - `ExpenseForm.module.css`: 不要になった `.row`（グリッド定義）を削除
   - **検証結果**: `pnpm run build` / `pnpm run lint` 成功。Playwright(Chromium)で追加フォーム・編集モーダルの入力〜登録〜バリデーション〜永続化のフローに回帰がないことを再確認。縦並びレイアウトのスクリーンショット（追加フォーム／編集モーダル、ダークモード）をユーザーに送付し目視確認済み
   - **未検証**: 実際のiOS Safariでの表示確認（この環境では検証手段がないため、ユーザーに再度確認を依頼）
+- **追記（縦並びにしてもiOS Safariで直らず・入力欄自体のはみ出しと判明）**: ユーザーから実機スクリーンショット付きで「日付欄が画面からはみ出る」と再報告。縦1カラムにしても直っていないことから、原因は列幅の配分ではなく、**日付入力欄そのものがコンテナの `width: 100%` を無視してネイティブ部品の内在幅で描画され、画面右端からはみ出している**ことだと判断（iOS SafariでUAデフォルトスタイルの `<input type="date">` が `width` を十分に尊重しないことがある既知のWebKitの癖）
+  - `ExpenseForm.module.css` の `.input` に `-webkit-appearance: none` / `appearance: none`（ネイティブのUAデフォルト装飾をリセットしてブラウザに指定幅を尊重させる、この種の問題への定番対策）、`max-width: 100%`、`overflow: hidden` を追加
+  - 保険として、はみ出しが発生してもページ全体が横スクロールしてしまわないよう `App.module.css` の `.formArea` と `EditExpenseModal.module.css` の `.panel` に `overflow-x: hidden` を追加（`.page` 自体に付けると `overflow-x` を非 `visible` にした際に `overflow-y` が暗黙的に `auto` 扱いとなり独立したスクロールコンテナ化してしまう懸念があったため、より限定的な範囲に留めた）
+  - **検証結果**: `pnpm run build` / `pnpm run lint` 成功。Playwright(Chromium)で追加フォーム・編集モーダルの入力〜登録〜バリデーション〜永続化のフローに回帰がないこと、日付・金額の入力欄がビューポート幅（390px）内に収まる（bounding boxで実測）ことを確認。カレンダーアイコンの表示もChromiumでは維持されている
+  - **未検証・懸念点**: 実際のiOS Safariでの表示確認は引き続きこの環境ではできない。`appearance: none` はブラウザによって `<input type="date">` の見た目（値の表示形式やアイコンの有無）が変わる可能性があり、iOS Safariで意図通りに動くかは未確認。もしこれでも直らない場合は、ネイティブの `<input type="date">` に依存しない自作の日付ピッカー（テキスト入力＋ボタンで `showPicker()` を呼ぶ、または完全に自前のUI）への置き換えが次の選択肢になる
 
 ### 次にやること
 - Phase 8の残り（月別グルーピング、一括清算、エクスポート/インポート）またはPhase 7（デプロイ）から選んで再開する
