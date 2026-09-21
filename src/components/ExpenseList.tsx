@@ -6,6 +6,7 @@ type Props = {
   expenses: Expense[];
   onToggleSettled: (id: string) => void;
   onRemove: (id: string) => void;
+  emptyMessage?: string;
 };
 
 function compareExpenses(a: Expense, b: Expense): number {
@@ -13,9 +14,14 @@ function compareExpenses(a: Expense, b: Expense): number {
   return a.createdAt < b.createdAt ? 1 : -1;
 }
 
-export function ExpenseList({ expenses, onToggleSettled, onRemove }: Props) {
+export function ExpenseList({
+  expenses,
+  onToggleSettled,
+  onRemove,
+  emptyMessage = "まだ記録がありません",
+}: Props) {
   if (expenses.length === 0) {
-    return <p className={styles.empty}>まだ記録がありません</p>;
+    return <p className={styles.empty}>{emptyMessage}</p>;
   }
 
   const sorted = [...expenses].sort(compareExpenses);
