@@ -24,7 +24,7 @@
 | --- | --- | --- |
 | Phase 0: プロジェクト初期化 | ✅ 完了 | |
 | Phase 1: 型とデータ層 | ✅ 完了 | |
-| Phase 2: 入力フォーム（F-01） | ⬜ 未着手 | |
+| Phase 2: 入力フォーム（F-01） | ✅ 完了 | |
 | Phase 3: 一覧表示・清算チェック・削除（F-02, F-03, F-05） | ⬜ 未着手 | |
 | Phase 4: 未清算合計の表示（F-04） | ⬜ 未着手 | |
 | Phase 5: スタイリングと UX | ⬜ 未着手 | |
@@ -59,6 +59,24 @@
   - `pnpm run dev` + Playwright(Chromium) で `useExpenses` を一時的に `App.tsx` に組み込み、ブラウザ上で `addExpense` → `toggleSettled` → `removeExpense` を実行し、`localStorage` の中身が都度正しく更新されること（`settled: false → true`、削除後は `expenses: []`）を確認。確認後 `App.tsx` は Phase 0 時点のプレースホルダーに戻し、デバッグ用コードは残していない
   - Vitest 等の自動テストは未導入（計画上も任意）。上記は手動スモークテストであり、自動テストとしては**未整備**
 
+### Phase 2 完了内容
+- `src/components/ExpenseForm.tsx`: 日付・項目名・金額の入力フォーム
+  - 日付: `input[type="date"]`、初期値は当日（ローカル日時から組み立て、タイムゾーンずれを回避）
+  - 項目名: `input[type="text"]`、金額: `input[type="number"] inputMode="numeric"`
+  - バリデーション: 項目名が空、または金額が数値でない/0以下の場合は登録不可とし、各入力欄の下に `role="alert"` でエラー文言を表示
+  - 送信後: 項目名・金額をクリアし日付は保持、項目名の入力欄に `useRef` でフォーカスを戻す
+  - `<form onSubmit>` で扱っているため Enter キーでも送信可能
+- `src/App.tsx`: `useExpenses` と `ExpenseForm` を接続し、`saveError` があれば `role="alert"` で表示
+  - 登録済みデータの一覧は **仮実装**（`<ul>` で日付・項目名・金額を並べるだけ）。正式な `ExpenseList` / `ExpenseItem`（並び順・清算チェック・削除・0件表示など）は Phase 3 で置き換える
+- **検証結果**:
+  - `pnpm run build` / `pnpm run lint` 成功（既知の `set-state-in-effect` 警告のみ、Phase 1から変化なし）
+  - `pnpm run dev` + Playwright(Chromium) で以下をブラウザ上で確認
+    - 未入力のまま送信 → 「項目名を入力してください」エラーが出て追加されない
+    - 金額 `0` で送信 → 「金額は1円以上の数値を入力してください」エラーが出て追加されない
+    - 正常入力で送信 → 一覧に反映され、項目名・金額欄はクリア、日付は保持、フォーカスが項目名に戻る
+    - リロード後も登録したデータが残る（`localStorage` 経由で永続化されていることを確認）
+  - スクリーンショットをユーザーに送付し目視確認済み
+
 ### Phase 6 完了内容
 - `vite-plugin-pwa` 導入、`registerType: 'autoUpdate'` で設定
 - アイコン生成済み（`public/icon-192.png`, `public/icon-512.png` = purpose `any maskable`, `public/apple-touch-icon.png`）。画像変換ツールが無い環境だったため Node の `zlib` のみで自前PNG生成（シンプルな「¥」マーク）
@@ -68,8 +86,8 @@
 - **未検証**: 実機のホーム画面への追加、Lighthouse の PWA 監査（ツール未実行）
 
 ### 次にやること
-- Phase 2（入力フォーム F-01: `ExpenseForm.tsx`、バリデーション、送信後の挙動）から再開する
-- `useExpenses` の `saveError` はまだどこにも表示していない。Phase 2 以降でフォーム送信時などにユーザーへ表示する導線を検討する
+- Phase 3（一覧表示・清算チェック・削除: `ExpenseList.tsx` / `ExpenseItem.tsx`）から再開する
+- `App.tsx` の一覧表示は仮実装（`<ul>` のみ）なので、Phase 3 で正式なコンポーネントに置き換える
 
 ---
 
@@ -441,9 +459,9 @@ Phase 4 を終えた時点で「立て替えを記録して未清算合計が見
 - [x] Vite + React プロジェクトが起動する
 - [x] `Expense` 型を定義した
 - [x] localStorage の読み書きができる
-- [ ] 日付・項目名・金額を入力して登録できる
-- [ ] 入力値のバリデーションが効く
-- [ ] 一覧が日付の降順で表示される
+- [x] 日付・項目名・金額を入力して登録できる
+- [x] 入力値のバリデーションが効く
+- [ ] 一覧が日付の降順で表示される（現状は仮の`<ul>`で登録順表示。Phase 3で対応）
 - [ ] チェックで清算済みを切り替えられる
 - [ ] 記録を削除できる
 - [ ] 未清算合計が画面上部に表示される
