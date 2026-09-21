@@ -23,7 +23,7 @@
 | Phase | 状態 | 備考 |
 | --- | --- | --- |
 | Phase 0: プロジェクト初期化 | ✅ 完了 | |
-| Phase 1: 型とデータ層 | ⬜ 未着手 | 次に着手予定 |
+| Phase 1: 型とデータ層 | ✅ 完了 | |
 | Phase 2: 入力フォーム（F-01） | ⬜ 未着手 | |
 | Phase 3: 一覧表示・清算チェック・削除（F-02, F-03, F-05） | ⬜ 未着手 | |
 | Phase 4: 未清算合計の表示（F-04） | ⬜ 未着手 | |
@@ -43,6 +43,22 @@
 - Vite + React + TypeScript でスキャフォールド、サンプル（ロゴ・カウンタ・デフォルトCSS）は削除済み
 - `pnpm run dev` / `pnpm run build` / `pnpm run lint` 動作確認済み
 
+### Phase 1 完了内容
+- `src/types/expense.ts`: `Expense` 型を定義（計画の3.1節どおり）
+- `src/lib/storage.ts`: `loadExpenses` / `saveExpenses` を実装
+  - `localStorage` キーは `tatekae-app/expenses/v1`、`{ version, expenses }` の形で保存
+  - JSON パース失敗・`expenses` が配列でない・要素の形が不正な場合は空配列にフォールバック（型ガード `isExpense` で要素単位に検証）
+  - `saveExpenses` は例外を握りつぶさず呼び出し元（`useExpenses`）に伝播させる設計
+- `src/lib/summary.ts`: `sumUnsettled` / `sumAll` を副作用なしの純粋関数として実装
+- `src/lib/format.ts`: `formatAmount`（`¥12,345`）/ `formatDate`（`9/21(月)` 形式、タイムゾーンずれを避けるためローカル日時で組み立て）を実装
+- `src/hooks/useExpenses.ts`: `useState(() => loadExpenses())` で遅延初期化し、`addExpense` / `updateExpense` / `toggleSettled` / `removeExpense` を提供。`useEffect` で state 変更のたびに `saveExpenses` を呼び、保存失敗時は `saveError` に文言をセットする（非機能要件「保存失敗時はユーザーに知らせる」への布石。実際の画面表示は Phase 2 以降で行う）
+- **検証結果**:
+  - `pnpm install` 実行後 `pnpm run build`（`tsc -b && vite build`）が成功することを確認
+  - `pnpm run lint`（oxlint）を実行し、エラーなし。`useExpenses.ts` の `useEffect` 内 `setState` について `react(set-state-in-effect)` の**警告**が1件出るが、計画書どおり「state が変わるたびに `useEffect` で `saveExpenses` を呼ぶ」設計を意図的に採用しているため許容（exit code 0、ビルドは阻害しない）
+  - `node --experimental-strip-types` で `storage.ts` / `summary.ts` / `format.ts` を直接実行するスモークテストを実施し、保存→読み込み一致、`sumUnsettled` / `sumAll` の計算値、`formatAmount` / `formatDate` の出力、不正JSON・不正な形のデータに対するフォールバック（空配列）をすべて確認
+  - `pnpm run dev` + Playwright(Chromium) で `useExpenses` を一時的に `App.tsx` に組み込み、ブラウザ上で `addExpense` → `toggleSettled` → `removeExpense` を実行し、`localStorage` の中身が都度正しく更新されること（`settled: false → true`、削除後は `expenses: []`）を確認。確認後 `App.tsx` は Phase 0 時点のプレースホルダーに戻し、デバッグ用コードは残していない
+  - Vitest 等の自動テストは未導入（計画上も任意）。上記は手動スモークテストであり、自動テストとしては**未整備**
+
 ### Phase 6 完了内容
 - `vite-plugin-pwa` 導入、`registerType: 'autoUpdate'` で設定
 - アイコン生成済み（`public/icon-192.png`, `public/icon-512.png` = purpose `any maskable`, `public/apple-touch-icon.png`）。画像変換ツールが無い環境だったため Node の `zlib` のみで自前PNG生成（シンプルな「¥」マーク）
@@ -52,7 +68,8 @@
 - **未検証**: 実機のホーム画面への追加、Lighthouse の PWA 監査（ツール未実行）
 
 ### 次にやること
-- Phase 1（型とデータ層: `Expense`型・`storage.ts`・`summary.ts`・`format.ts`・`useExpenses`）から再開する
+- Phase 2（入力フォーム F-01: `ExpenseForm.tsx`、バリデーション、送信後の挙動）から再開する
+- `useExpenses` の `saveError` はまだどこにも表示していない。Phase 2 以降でフォーム送信時などにユーザーへ表示する導線を検討する
 
 ---
 
@@ -422,8 +439,8 @@ Phase 4 を終えた時点で「立て替えを記録して未清算合計が見
 
 ### MVP
 - [x] Vite + React プロジェクトが起動する
-- [ ] `Expense` 型を定義した
-- [ ] localStorage の読み書きができる
+- [x] `Expense` 型を定義した
+- [x] localStorage の読み書きができる
 - [ ] 日付・項目名・金額を入力して登録できる
 - [ ] 入力値のバリデーションが効く
 - [ ] 一覧が日付の降順で表示される
