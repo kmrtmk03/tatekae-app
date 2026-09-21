@@ -1,6 +1,7 @@
 import styles from "./App.module.css";
 import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
+import { SummaryBar } from "./components/SummaryBar";
 import { useExpenses } from "./hooks/useExpenses";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>立て替え管理</h1>
+        <SummaryBar expenses={expenses} />
       </header>
 
       {saveError && (
