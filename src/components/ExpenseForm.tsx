@@ -61,40 +61,38 @@ export function ExpenseForm({ onSubmit }: Props) {
         )}
       </div>
 
-      <div className={styles.row}>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="expense-date">
-            日付
-          </label>
-          <input
-            id="expense-date"
-            className={styles.input}
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="expense-amount">
-            金額
-          </label>
-          <input
-            id="expense-amount"
-            className={styles.input}
-            type="number"
-            inputMode="numeric"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="例: 3000"
-          />
-        </div>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="expense-date">
+          日付
+        </label>
+        <input
+          id="expense-date"
+          className={styles.input}
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
       </div>
-      {errors.amount && (
-        <p className={styles.errorText} role="alert">
-          {errors.amount}
-        </p>
-      )}
+
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="expense-amount">
+          金額
+        </label>
+        <input
+          id="expense-amount"
+          className={styles.input}
+          type="number"
+          inputMode="numeric"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="例: 3000"
+        />
+        {errors.amount && (
+          <p className={styles.errorText} role="alert">
+            {errors.amount}
+          </p>
+        )}
+      </div>
 
       <button className={styles.submit} type="submit">
         登録する

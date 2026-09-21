@@ -78,39 +78,37 @@ export function EditExpenseModal({ expense, onSave, onClose }: Props) {
             )}
           </div>
 
-          <div className={formStyles.row}>
-            <div className={formStyles.field}>
-              <label className={formStyles.label} htmlFor="edit-expense-date">
-                日付
-              </label>
-              <input
-                id="edit-expense-date"
-                className={formStyles.input}
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
-
-            <div className={formStyles.field}>
-              <label className={formStyles.label} htmlFor="edit-expense-amount">
-                金額
-              </label>
-              <input
-                id="edit-expense-amount"
-                className={formStyles.input}
-                type="number"
-                inputMode="numeric"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
+          <div className={formStyles.field}>
+            <label className={formStyles.label} htmlFor="edit-expense-date">
+              日付
+            </label>
+            <input
+              id="edit-expense-date"
+              className={formStyles.input}
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
-          {errors.amount && (
-            <p className={formStyles.errorText} role="alert">
-              {errors.amount}
-            </p>
-          )}
+
+          <div className={formStyles.field}>
+            <label className={formStyles.label} htmlFor="edit-expense-amount">
+              金額
+            </label>
+            <input
+              id="edit-expense-amount"
+              className={formStyles.input}
+              type="number"
+              inputMode="numeric"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            {errors.amount && (
+              <p className={formStyles.errorText} role="alert">
+                {errors.amount}
+              </p>
+            )}
+          </div>
 
           <div className={styles.actions}>
             <button
