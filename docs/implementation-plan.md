@@ -25,7 +25,7 @@
 | Phase 0: プロジェクト初期化 | ✅ 完了 | |
 | Phase 1: 型とデータ層 | ✅ 完了 | |
 | Phase 2: 入力フォーム（F-01） | ✅ 完了 | |
-| Phase 3: 一覧表示・清算チェック・削除（F-02, F-03, F-05） | ⬜ 未着手 | |
+| Phase 3: 一覧表示・清算チェック・削除（F-02, F-03, F-05） | ✅ 完了 | |
 | Phase 4: 未清算合計の表示（F-04） | ⬜ 未着手 | |
 | Phase 5: スタイリングと UX | ⬜ 未着手 | |
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
@@ -77,6 +77,26 @@
     - リロード後も登録したデータが残る（`localStorage` 経由で永続化されていることを確認）
   - スクリーンショットをユーザーに送付し目視確認済み
 
+### Phase 3 完了内容
+- `src/components/ExpenseList.tsx`: 記録一覧のコンテナ
+  - 並び順は日付の降順、同日なら `createdAt` の降順（`compareExpenses` で比較）
+  - 0件のときは「まだ記録がありません」を表示
+- `src/components/ExpenseItem.tsx`: 1行の表示
+  - `<input type="checkbox">`（ネイティブ要素、`<label htmlFor>` で結びつけ）で清算済み切り替え
+  - 清算済みの行は取り消し線＋グレー表示（`ExpenseItem.module.css`）
+  - 削除は `window.confirm` で確認してから実行（誤タップ対策。追加の依存ライブラリなしで実現）
+  - タップ領域確保のため `.checkboxLabel` に `min-width/min-height: 44px` を設定（Phase 3 の要件としてここで対応。Phase 5 は全体レイアウト・配色・ダークモードなどを扱う）
+- `src/App.tsx`: 仮実装だった `<ul>` を `ExpenseList` に置き換え、`toggleSettled` / `removeExpense` を接続
+- **検証結果**:
+  - `pnpm run build` / `pnpm run lint` 成功（既知の `set-state-in-effect` 警告のみ）
+  - `pnpm run dev` + Playwright(Chromium) で以下を確認
+    - 0件時に「まだ記録がありません」が表示される
+    - 日付の異なる記録を追加すると新しい日付が上に表示される（降順）
+    - チェックを入れると `settled` クラスが付与され取り消し線・グレー表示になり、チェック状態はリロード後も保持される
+    - 削除ボタン → 確認ダイアログで承認すると削除される／キャンセルすると削除されない（両方確認）
+    - 全件削除すると「まだ記録がありません」表示に戻る
+  - スクリーンショットをユーザーに送付し目視確認済み
+
 ### Phase 6 完了内容
 - `vite-plugin-pwa` 導入、`registerType: 'autoUpdate'` で設定
 - アイコン生成済み（`public/icon-192.png`, `public/icon-512.png` = purpose `any maskable`, `public/apple-touch-icon.png`）。画像変換ツールが無い環境だったため Node の `zlib` のみで自前PNG生成（シンプルな「¥」マーク）
@@ -86,8 +106,7 @@
 - **未検証**: 実機のホーム画面への追加、Lighthouse の PWA 監査（ツール未実行）
 
 ### 次にやること
-- Phase 3（一覧表示・清算チェック・削除: `ExpenseList.tsx` / `ExpenseItem.tsx`）から再開する
-- `App.tsx` の一覧表示は仮実装（`<ul>` のみ）なので、Phase 3 で正式なコンポーネントに置き換える
+- Phase 4（未清算合計の表示: `SummaryBar.tsx`）から再開する
 
 ---
 
@@ -461,9 +480,9 @@ Phase 4 を終えた時点で「立て替えを記録して未清算合計が見
 - [x] localStorage の読み書きができる
 - [x] 日付・項目名・金額を入力して登録できる
 - [x] 入力値のバリデーションが効く
-- [ ] 一覧が日付の降順で表示される（現状は仮の`<ul>`で登録順表示。Phase 3で対応）
-- [ ] チェックで清算済みを切り替えられる
-- [ ] 記録を削除できる
+- [x] 一覧が日付の降順で表示される
+- [x] チェックで清算済みを切り替えられる
+- [x] 記録を削除できる
 - [ ] 未清算合計が画面上部に表示される
 - [ ] リロードしてもデータが残る
 
