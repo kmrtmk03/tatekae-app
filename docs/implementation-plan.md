@@ -29,15 +29,14 @@
 | Phase 4: 未清算合計の表示（F-04） | ✅ 完了 | |
 | Phase 5: スタイリングと UX | ✅ 完了 | ユーザー指示によりPhase 4より先に実施。アニメーション/Undoトースト（任意項目）は未実施 |
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
-| Phase 7: デプロイ | ⬜ 未着手 | |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集が完了。月別集計/一括清算/エクスポート・インポートは未着手 |
-| Phase 9: Firebase への移行準備 | ⬜ 未着手 | |
 
 ### 当初計画からの変更点
 
 - **パッケージマネージャー**: npm ではなく **pnpm** に統一済み（`pnpm-lock.yaml` が正、`package-lock.json` は削除済み）。以降のコマンドは `pnpm install` / `pnpm run dev` などを使うこと。
 - **Lint/フォーマッタ**: 当初想定の Prettier + ESLint ではなく、`npm create vite@latest` 最新版が標準採用する **oxlint**（`.oxlintrc.json`）になっている。`pnpm run lint` で実行可能。
 - **技術スタック**: React は 18+ 想定だったが、実際にインストールされたのは **React 19系**。
+- **Phase 7（デプロイ）・Phase 9（Firebase への移行準備）をプランから削除**: 方針変更のため、ユーザー指示により一旦削除（2026-10-07）。進捗表・第6章の詳細・第7章のフロー図・第8章のチェックリスト（公開 / Firebase 移行）から取り除いた。再開する場合は改めて計画を立て直す
 - **ツールのバージョン固定**: `package.json` に `"packageManager": "pnpm@11.5.2"` と `engines`（node `>=24.16.0 <25` / pnpm `>=11.5.2 <12`）、ルートに `.nvmrc`（`24.16.0`）を追加。固定値は作業環境（Node v24.16.0 / pnpm 11.5.2）に合わせた。
 
 ### Phase 0 完了内容
@@ -184,8 +183,7 @@
   - **未検証・懸念点**: 実際のiOS Safariでの表示確認は引き続きこの環境ではできない。`appearance: none` はブラウザによって `<input type="date">` の見た目（値の表示形式やアイコンの有無）が変わる可能性があり、iOS Safariで意図通りに動くかは未確認。もしこれでも直らない場合は、ネイティブの `<input type="date">` に依存しない自作の日付ピッカー（テキスト入力＋ボタンで `showPicker()` を呼ぶ、または完全に自前のUI）への置き換えが次の選択肢になる
 
 ### 次にやること
-- Phase 8の残り（月別グルーピング、一括清算、エクスポート/インポート）またはPhase 7（デプロイ）から選んで再開する
-- Phase 7（デプロイ）で CI を設ける場合は、`.nvmrc` と `packageManager` を参照してバージョンを揃える（現状 CI は未設定）
+- Phase 8の残り（月別グルーピング、一括清算、エクスポート/インポート）を進める
 
 ---
 
@@ -454,18 +452,6 @@ tatekae-app/
 
 ---
 
-### Phase 7: デプロイ
-
-1. ホスティング先を決める（Vercel / Netlify / Firebase Hosting / GitHub Pages）
-   - 将来 Firebase を使うなら Firebase Hosting に寄せると管理先が1つで済む
-2. GitHub リポジトリと連携し、push で自動デプロイされるようにする
-3. HTTPS で配信されることを確認する（PWA の必須条件）
-4. サブディレクトリに置く場合は `vite.config.ts` の `base` と manifest の `start_url` / `scope` を合わせる
-
-**完了条件**: 公開 URL をスマートフォンで開き、ホーム画面に追加できる
-
----
-
 ### Phase 8: 追加機能（MVP 後）
 
 優先度順:
@@ -474,51 +460,7 @@ tatekae-app/
 2. **記録の編集** — 金額の打ち間違いを直せるようにする
 3. **月別グルーピング** — 月ごとの見出しと小計を出す
 4. **一括清算** — 「未清算をすべて清算済みにする」
-5. **エクスポート / インポート** — Firebase 移行前のデータ退避手段として先に作っておくと安全
-
----
-
-### Phase 9: Firebase への移行準備
-
-#### 移行を楽にするための設計
-
-Phase 1 の時点で、コンポーネントが `localStorage` を直接触らないようにしておく。
-データアクセスは次の形に統一する。
-
-```ts
-// src/lib/storage.ts が公開するインターフェース
-export interface ExpenseRepository {
-  list(): Promise<Expense[]>;
-  add(expense: Expense): Promise<void>;
-  update(id: string, patch: Partial<Expense>): Promise<void>;
-  remove(id: string): Promise<void>;
-}
-```
-
-localStorage 実装でも **戻り値を `Promise` にしておく**のが要点。
-同期的な API で作ってしまうと、Firebase に差し替えるときに全コンポーネントの呼び出し側を非同期対応に書き換えることになる。
-
-#### 移行の手順
-
-1. Firebase プロジェクトを作成し、Firestore を有効化する
-2. Firebase Authentication（匿名認証 または Google ログイン）を導入する
-3. `FirestoreExpenseRepository` を `ExpenseRepository` の実装として追加する
-   - コレクション構成: `users/{uid}/expenses/{expenseId}`
-4. `useExpenses` が使う Repository を差し替える（環境変数で切り替えられるようにする）
-5. 初回ログイン時に localStorage のデータを Firestore へ移行する処理を1度だけ走らせる
-6. Firestore のセキュリティルールを設定する（自分のデータしか読み書きできないようにする）
-   ```
-   match /users/{uid}/expenses/{doc} {
-     allow read, write: if request.auth != null && request.auth.uid == uid;
-   }
-   ```
-7. オフライン永続化を有効にする（`enableIndexedDbPersistence`）ことで PWA のオフライン要件を維持する
-
-#### 注意点
-
-- Firebase の設定値（API キーなど）は `.env` に置き、`VITE_` プレフィックスを付ける
-- `.env` は `.gitignore` に追加し、`.env.example` だけをコミットする
-- Firestore の API キーはクライアントに露出する前提の値だが、**セキュリティルールの設定は必須**。ルールを書かないままだと誰でも全データを読める状態になる
+5. **エクスポート / インポート** — データ退避手段として作っておくと安全
 
 ---
 
@@ -539,11 +481,7 @@ Phase 5  スタイリング
    ↓
 Phase 6  PWA 化
    ↓
-Phase 7  デプロイ
-   ↓
 Phase 8  フィルタ・編集・月別集計など
-   ↓
-Phase 9  Firebase 移行
 ```
 
 Phase 4 を終えた時点で「立て替えを記録して未清算合計が見える」という当初の目的は満たせる。
@@ -580,13 +518,5 @@ Phase 4 を終えた時点で「立て替えを記録して未清算合計が見
 - [ ] ホーム画面に追加できる（未検証: 実機での確認が必要）
 - [ ] Lighthouse の PWA 監査を通る（未実行）
 
-### 公開
-- [ ] HTTPS でデプロイされている
+### 実機確認
 - [ ] スマートフォン実機で動作を確認した
-
-### Firebase 移行（将来）
-- [ ] データアクセスが Repository 経由に統一されている
-- [ ] Repository のメソッドが Promise を返す
-- [ ] `.env` が `.gitignore` に入っている
-- [ ] Firestore のセキュリティルールを設定した
-- [ ] localStorage からの移行処理を用意した
