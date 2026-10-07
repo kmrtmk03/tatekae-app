@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import styles from "./App.module.css";
+import { AddExpenseModal } from "./components/AddExpenseModal";
 import { EditExpenseModal } from "./components/EditExpenseModal";
-import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
 import type { ExpenseFilter } from "./components/FilterTabs";
 import { FilterTabs } from "./components/FilterTabs";
@@ -20,6 +20,8 @@ function App() {
   } = useExpenses();
   const [filter, setFilter] = useState<ExpenseFilter>("all");
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  // 新規追加モーダルの開閉状態
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const filteredExpenses = useMemo(() => {
     if (filter === "unsettled") return expenses.filter((e) => !e.settled);
@@ -54,9 +56,21 @@ function App() {
         />
       </main>
 
-      <div className={styles.formArea}>
-        <ExpenseForm onSubmit={addExpense} />
-      </div>
+      <button
+        type="button"
+        className={styles.addButton}
+        onClick={() => setIsAddModalOpen(true)}
+        aria-label="記録を追加"
+      >
+        ＋
+      </button>
+
+      {isAddModalOpen && (
+        <AddExpenseModal
+          onSubmit={addExpense}
+          onClose={() => setIsAddModalOpen(false)}
+        />
+      )}
 
       {editingExpense && (
         <EditExpenseModal

@@ -49,6 +49,7 @@ export function ExpenseForm({ onSubmit }: Props) {
           id="expense-title"
           className={styles.input}
           type="text"
+          autoFocus
           ref={titleInputRef}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
