@@ -13,6 +13,16 @@
 - パッケージマネージャーは **pnpm** に統一済み（`npm` / `yarn` は使わない）
 - Lint は **oxlint**（`pnpm run lint`）、フォーマッタは **Prettier**（`pnpm run format` / `pnpm run format:check`。セミコロンなし・ダブルクォート・末尾カンマ）。当初計画のESLintからは変更済み。コード変更後は `pnpm run format` を実行してからコミットする
 
+## 実装方針
+
+コードを書く前に [.claude/rules/implementation.md](.claude/rules/implementation.md) を読む。要点は次のとおり。
+
+- コンポーネントは `components/<Name>/` に tsx と `module.css` を同居させる（バレルは作らない）
+- 型名は `IXxx` / `TXxx`、ファイル接尾辞は `*.type.ts` / `*.utils.ts`
+- ロジックは hooks と `lib/*.utils.ts` の純粋関数へ。localStorage に依存する処理は `lib/storage.utils.ts` のみ
+- 外部データは `unknown` + 型ガードで検証する（`as` で済ませない）
+- `SummaryBar` には絞り込み前の全件を渡す（月・清算状態フィルタの影響を受けない）
+
 ## 作業引き継ぎルール（重要・毎回必須）
 
 他セッションへの引き継ぎを前提に作業する。以下を**都度**（1つの意味のあるまとまり作業ごと。
