@@ -1,5 +1,5 @@
-import type { IExpense } from "../types/expense.type"
-import { formatAmount, formatDate } from "../lib/format.utils"
+import type { IExpense } from "../../types/expense.type"
+import { formatAmount, formatDate } from "../../lib/format.utils"
 import styles from "./ExpenseItem.module.css"
 
 interface IExpenseItemProps {

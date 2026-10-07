@@ -1,5 +1,5 @@
-import { formatMonth } from "../lib/format.utils"
-import { ALL_MONTHS } from "../lib/month.utils"
+import { formatMonth } from "../../lib/format.utils"
+import { ALL_MONTHS } from "../../lib/month.utils"
 import styles from "./MonthFilter.module.css"
 
 interface IMonthFilterProps {

@@ -1,6 +1,6 @@
-import type { TExpenseInput } from "../types/expense.type"
-import { ExpenseForm } from "./ExpenseForm"
-import { Modal } from "./Modal"
+import type { TExpenseInput } from "../../types/expense.type"
+import { ExpenseForm } from "../ExpenseForm/ExpenseForm"
+import { Modal } from "../Modal/Modal"
 
 interface IAddExpenseModalProps {
   /** 登録確定時に呼ばれる。モーダルは登録後に自動で閉じる */

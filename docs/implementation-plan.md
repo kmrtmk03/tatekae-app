@@ -234,6 +234,7 @@
   - 各コミットで `pnpm exec tsc -b` / `pnpm run build` 成功。最終的に `pnpm run lint`（既知の警告1件のみ）・`pnpm run format:check` も成功
   - `pnpm run dev` + アプリ内ブラウザ（390×844）で、不正要素を混ぜたテストデータを投入して回帰確認: 不正要素の除外、追加（バリデーションエラー・登録・日付初期値・フォーカス）、編集（初期値・エラー・保存）、4通りの閉じ方、月フィルタと清算状態フィルタの併用、該当なしメッセージ、月を絞った状態でも総額が全件分のまま、選択中の月の最後の1件を削除すると「すべての月」に戻る、清算チェックの切り替えと `localStorage` への反映、`id` が重複しないこと
   - **未検証**: 実機（iOS Safari）での確認。自動テストは無いため、上記は手動確認のみ
+- **コンポーネントのディレクトリ化**: `components/` 直下に並んでいた tsx と `*.module.css` を、コンポーネントごとのディレクトリ（例: `components/ExpenseForm/ExpenseForm.tsx` + `ExpenseForm.module.css`）にまとめた。CSS を持たない `AddExpenseModal` / `EditExpenseModal` も一貫性のため同じ構成。`index.ts`（バレル）は、プロジェクトに既存の採用がないため作成せず、import は `../ExpenseForm/ExpenseForm` のようにファイルを直接指す。ファイルの移動は `git mv` で行い履歴を追える。挙動の変更はなし（`tsc -b` / `pnpm run build` / `pnpm run lint` / `pnpm run format:check` 成功。ブラウザでの再確認は未実施で、import 解決はビルドで確認）
 - **注意**: 上記のファイル名変更により、本書の過去の完了内容（Phase 1〜8 の記述）に出てくる `lib/storage.ts` などの旧名は、現在は `*.utils.ts` になっている
 
 ### 次にやること
@@ -342,16 +343,16 @@ tatekae-app/
 │   ├── icon-512.png
 │   └── apple-touch-icon.png
 ├── src/
-│   ├── components/
-│   │   ├── Modal.tsx              # 共通モーダル（オーバーレイ・ヘッダー・Escape）
-│   │   ├── AddExpenseModal.tsx    # 追加モーダル
-│   │   ├── EditExpenseModal.tsx   # 編集モーダル
-│   │   ├── ExpenseForm.tsx        # 追加・編集共通の入力フォーム
-│   │   ├── ExpenseList.tsx        # 一覧のコンテナ
-│   │   ├── ExpenseItem.tsx        # 1行（チェック・編集・削除）
-│   │   ├── SummaryBar.tsx         # 未清算合計の表示
-│   │   ├── FilterTabs.tsx         # 清算状態フィルタ
-│   │   └── MonthFilter.tsx        # 月フィルタ
+│   ├── components/            # 1 コンポーネント 1 ディレクトリ（tsx と module.css を同居）
+│   │   ├── Modal/                 # 共通モーダル（オーバーレイ・ヘッダー・Escape）
+│   │   ├── AddExpenseModal/       # 追加モーダル
+│   │   ├── EditExpenseModal/      # 編集モーダル
+│   │   ├── ExpenseForm/           # 追加・編集共通の入力フォーム
+│   │   ├── ExpenseList/           # 一覧のコンテナ
+│   │   ├── ExpenseItem/           # 1行（チェック・編集・削除）
+│   │   ├── SummaryBar/            # 未清算合計の表示
+│   │   ├── FilterTabs/            # 清算状態フィルタ
+│   │   └── MonthFilter/           # 月フィルタ
 │   ├── hooks/
 │   │   ├── useExpenses.ts         # CRUD と永続化をまとめる
 │   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と結果

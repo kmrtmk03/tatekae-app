@@ -1,5 +1,5 @@
-import type { IExpense } from "../types/expense.type"
-import { ExpenseItem } from "./ExpenseItem"
+import type { IExpense } from "../../types/expense.type"
+import { ExpenseItem } from "../ExpenseItem/ExpenseItem"
 import styles from "./ExpenseList.module.css"
 
 interface IExpenseListProps {

@@ -1,6 +1,6 @@
-import type { IExpense, TExpenseInput } from "../types/expense.type"
-import { ExpenseForm } from "./ExpenseForm"
-import { Modal } from "./Modal"
+import type { IExpense, TExpenseInput } from "../../types/expense.type"
+import { ExpenseForm } from "../ExpenseForm/ExpenseForm"
+import { Modal } from "../Modal/Modal"
 
 interface IEditExpenseModalProps {
   /** 編集対象の記録。開いた時点の値がフォームの初期値になる */

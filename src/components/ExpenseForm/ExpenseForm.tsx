@@ -1,8 +1,8 @@
 import { useId, useState } from "react"
 import type { FormEvent } from "react"
-import { validateExpenseInput } from "../lib/validation.utils"
-import type { IExpenseFormErrors } from "../lib/validation.utils"
-import type { TExpenseInput } from "../types/expense.type"
+import { validateExpenseInput } from "../../lib/validation.utils"
+import type { IExpenseFormErrors } from "../../lib/validation.utils"
+import type { TExpenseInput } from "../../types/expense.type"
 import styles from "./ExpenseForm.module.css"
 
 interface IExpenseFormProps {

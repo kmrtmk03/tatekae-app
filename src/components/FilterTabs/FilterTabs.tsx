@@ -1,4 +1,4 @@
-import type { TExpenseFilter } from "../types/expense.type"
+import type { TExpenseFilter } from "../../types/expense.type"
 import styles from "./FilterTabs.module.css"
 
 interface IFilterTabsProps {
