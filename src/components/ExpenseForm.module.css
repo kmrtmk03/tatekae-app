@@ -52,9 +52,27 @@
   color: var(--color-danger);
 }
 
-.submit {
-  height: 48px;
+.actions {
+  display: flex;
+  gap: 8px;
   margin-top: 4px;
+}
+
+.cancelButton {
+  flex: 1;
+  height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit {
+  flex: 1;
+  height: 48px;
   border: none;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
