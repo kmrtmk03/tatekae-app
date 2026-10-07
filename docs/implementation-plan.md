@@ -11,8 +11,8 @@
 | 形態 | PWA（インストール可能・オフライン動作） |
 | フレームワーク | Vite + React |
 | 言語 | TypeScript（推奨。JavaScript でも可） |
-| データ保存 | 第1段階: localStorage / 第2段階: Firebase Firestore |
-| 対象ユーザー | 主に自分ひとり（将来的に複数端末で同期） |
+| データ保存 | localStorage |
+| 対象ユーザー | 主に自分ひとり |
 
 ---
 
@@ -36,7 +36,7 @@
 - **パッケージマネージャー**: npm ではなく **pnpm** に統一済み（`pnpm-lock.yaml` が正、`package-lock.json` は削除済み）。以降のコマンドは `pnpm install` / `pnpm run dev` などを使うこと。
 - **Lint/フォーマッタ**: 当初想定の Prettier + ESLint ではなく、`npm create vite@latest` 最新版が標準採用する **oxlint**（`.oxlintrc.json`）になっている。`pnpm run lint` で実行可能。
 - **技術スタック**: React は 18+ 想定だったが、実際にインストールされたのは **React 19系**。
-- **Phase 7（デプロイ）・Phase 9（Firebase への移行準備）をプランから削除**: 方針変更のため、ユーザー指示により一旦削除（2026-10-07）。進捗表・第6章の詳細・第7章のフロー図・第8章のチェックリスト（公開 / Firebase 移行）から取り除いた。再開する場合は改めて計画を立て直す
+- **Phase 7（デプロイ）・Phase 9（Firebase への移行準備）をプランから削除**: 方針変更のため、ユーザー指示により一旦削除（2026-10-07）。進捗表・第6章の詳細・第7章のフロー図・第8章のチェックリスト（公開 / Firebase 移行）から取り除いた。あわせて Firebase 関連の記述（データ保存の第2段階、複数端末同期の要件など）も削除し、データ保存は localStorage のみとした。再開する場合は改めて計画を立て直す
 - **ツールのバージョン固定**: `package.json` に `"packageManager": "pnpm@11.5.2"` と `engines`（node `>=24.16.0 <25` / pnpm `>=11.5.2 <12`）、ルートに `.nvmrc`（`24.16.0`）を追加。固定値は作業環境（Node v24.16.0 / pnpm 11.5.2）に合わせた。
 
 ### Phase 0 完了内容
@@ -208,7 +208,6 @@
 - 月別のグルーピングと月ごとの小計
 - 「まとめて清算済みにする」一括操作
 - データのエクスポート / インポート（JSON）
-- Firebase Authentication + Firestore による複数端末同期
 
 ### 2.3 非機能要件
 
@@ -246,7 +245,7 @@ export type Expense = {
 - **日付は文字列で持つ**: `Date` オブジェクトは JSON 化で型が落ちるため、`'YYYY-MM-DD'` の文字列で統一する。文字列のままソートでき、`input[type="date"]` の値をそのまま使える。
 - **金額は数値で持つ**: 表示時にだけ `toLocaleString()` で整形する。文字列で持つと合計計算のたびにパースが必要になる。
 - **`settled` は真偽値**: 将来「いつ清算したか」を持ちたくなったら `settledAt?: string` を追加する（後方互換のため optional にする）。
-- **`id` は端末側で生成**: Firebase に移行してもそのままドキュメント ID として使える。
+- **`id` は端末側で生成**: `crypto.randomUUID()` で生成し、外部に依存せず一意性を保つ。
 
 ### 3.2 localStorage の保存形式
 
@@ -297,7 +296,7 @@ tatekae-app/
 │   ├── hooks/
 │   │   └── useExpenses.ts         # CRUD と永続化をまとめる
 │   ├── lib/
-│   │   ├── storage.ts             # localStorage の読み書き（差し替え対象）
+│   │   ├── storage.ts             # localStorage の読み書き
 │   │   ├── format.ts              # 金額・日付の整形
 │   │   └── summary.ts             # 合計計算などの純粋関数
 │   ├── types/
@@ -314,7 +313,7 @@ tatekae-app/
 ```
 
 **方針**: 「保存先に依存する処理」を `lib/storage.ts` の1ファイルに閉じ込める。
-コンポーネントは `useExpenses` 経由でしかデータに触らないため、Firebase 移行時に書き換えるのはこの2ファイルだけで済む。
+コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのはこの2ファイルだけで済む。
 
 ---
 
