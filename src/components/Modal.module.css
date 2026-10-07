@@ -12,7 +12,7 @@
 
 .panel {
   width: 100%;
-  max-width: 480px;
+  max-width: var(--layout-max-width);
   display: flex;
   flex-direction: column;
   gap: 10px;

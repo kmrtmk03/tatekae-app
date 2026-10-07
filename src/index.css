@@ -22,6 +22,9 @@
   --shadow-sm: 0 1px 2px rgba(17, 17, 32, 0.06);
   --shadow-md: 0 4px 16px rgba(17, 17, 32, 0.08);
 
+  /* アプリ全体・モーダルの最大幅 */
+  --layout-max-width: 480px;
+
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }

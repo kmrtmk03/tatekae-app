@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  max-width: 480px;
+  max-width: var(--layout-max-width);
   margin: 0 auto;
   background: var(--color-bg);
 }
@@ -47,10 +47,10 @@
   padding: 4px 16px calc(88px + var(--safe-bottom));
 }
 
-/* 右下に固定する追加ボタン。.page（最大幅480px・中央寄せ）の右端に揃える */
+/* 右下に固定する追加ボタン。.page（最大幅は --layout-max-width・中央寄せ）の右端に揃える */
 .addButton {
   position: fixed;
-  right: max(16px, calc((100vw - 480px) / 2 + 16px));
+  right: max(16px, calc((100vw - var(--layout-max-width)) / 2 + 16px));
   bottom: calc(16px + var(--safe-bottom));
   z-index: 20;
   display: inline-flex;

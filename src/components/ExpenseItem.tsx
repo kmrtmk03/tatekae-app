@@ -9,6 +9,10 @@ interface IExpenseItemProps {
   onRemove: (id: string) => void
 }
 
+/**
+ * 記録 1 行分の表示。清算チェック・編集・削除の操作を持つ。
+ * 削除は誤タップ防止のため確認ダイアログを挟んでから onRemove を呼ぶ。
+ */
 export function ExpenseItem({
   expense,
   onToggleSettled,
