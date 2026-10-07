@@ -38,6 +38,7 @@
 - **パッケージマネージャー**: npm ではなく **pnpm** に統一済み（`pnpm-lock.yaml` が正、`package-lock.json` は削除済み）。以降のコマンドは `pnpm install` / `pnpm run dev` などを使うこと。
 - **Lint/フォーマッタ**: 当初想定の Prettier + ESLint ではなく、`npm create vite@latest` 最新版が標準採用する **oxlint**（`.oxlintrc.json`）になっている。`pnpm run lint` で実行可能。
 - **技術スタック**: React は 18+ 想定だったが、実際にインストールされたのは **React 19系**。
+- **ツールのバージョン固定**: `package.json` に `"packageManager": "pnpm@11.5.2"` と `engines`（node `>=24.16.0 <25` / pnpm `>=11.5.2 <12`）、ルートに `.nvmrc`（`24.16.0`）を追加。固定値は作業環境（Node v24.16.0 / pnpm 11.5.2）に合わせた。
 
 ### Phase 0 完了内容
 - Vite + React + TypeScript でスキャフォールド、サンプル（ロゴ・カウンタ・デフォルトCSS）は削除済み
@@ -184,6 +185,7 @@
 
 ### 次にやること
 - Phase 8の残り（月別グルーピング、一括清算、エクスポート/インポート）またはPhase 7（デプロイ）から選んで再開する
+- Phase 7（デプロイ）で CI を設ける場合は、`.nvmrc` と `packageManager` を参照してバージョンを揃える（現状 CI は未設定）
 
 ---
 
