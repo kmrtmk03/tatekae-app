@@ -1,17 +1,17 @@
-import styles from "./FilterTabs.module.css";
+import styles from "./FilterTabs.module.css"
 
-export type ExpenseFilter = "all" | "unsettled" | "settled";
+export type ExpenseFilter = "all" | "unsettled" | "settled"
 
 type Props = {
-  value: ExpenseFilter;
-  onChange: (value: ExpenseFilter) => void;
-};
+  value: ExpenseFilter
+  onChange: (value: ExpenseFilter) => void
+}
 
 const OPTIONS: { value: ExpenseFilter; label: string }[] = [
   { value: "all", label: "すべて" },
   { value: "unsettled", label: "未清算" },
   { value: "settled", label: "清算済み" },
-];
+]
 
 export function FilterTabs({ value, onChange }: Props) {
   return (
@@ -31,5 +31,5 @@ export function FilterTabs({ value, onChange }: Props) {
         </button>
       ))}
     </div>
-  );
+  )
 }

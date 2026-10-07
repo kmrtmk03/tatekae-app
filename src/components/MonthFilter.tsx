@@ -1,14 +1,14 @@
-import { formatMonth } from "../lib/format";
-import { ALL_MONTHS } from "../lib/month";
-import styles from "./MonthFilter.module.css";
+import { formatMonth } from "../lib/format"
+import { ALL_MONTHS } from "../lib/month"
+import styles from "./MonthFilter.module.css"
 
 type Props = {
   /** 選択中の値。ALL_MONTHS または 'YYYY-MM' */
-  value: string;
+  value: string
   /** 記録が存在する月の月キー（'YYYY-MM'）。選択肢として表示する */
-  monthKeys: string[];
-  onChange: (value: string) => void;
-};
+  monthKeys: string[]
+  onChange: (value: string) => void
+}
 
 /** 表示する月を絞り込むセレクトボックス（記録が存在する月だけを選択肢に出す） */
 export function MonthFilter({ value, monthKeys, onChange }: Props) {
@@ -26,5 +26,5 @@ export function MonthFilter({ value, monthKeys, onChange }: Props) {
         </option>
       ))}
     </select>
-  );
+  )
 }

@@ -1,25 +1,25 @@
-import { useEffect, useState } from "react";
-import type { Expense } from "../types/expense";
-import { loadExpenses, saveExpenses } from "../lib/storage";
+import { useEffect, useState } from "react"
+import type { Expense } from "../types/expense"
+import { loadExpenses, saveExpenses } from "../lib/storage"
 
 export type NewExpenseInput = {
-  date: string;
-  title: string;
-  amount: number;
-};
+  date: string
+  title: string
+  amount: number
+}
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>(() => loadExpenses());
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [expenses, setExpenses] = useState<Expense[]>(() => loadExpenses())
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     try {
-      saveExpenses(expenses);
-      setSaveError(null);
+      saveExpenses(expenses)
+      setSaveError(null)
     } catch {
-      setSaveError("保存に失敗しました。ブラウザの空き容量を確認してください。");
+      setSaveError("保存に失敗しました。ブラウザの空き容量を確認してください。")
     }
-  }, [expenses]);
+  }, [expenses])
 
   function addExpense(input: NewExpenseInput) {
     const expense: Expense = {
@@ -29,24 +29,24 @@ export function useExpenses() {
       amount: input.amount,
       settled: false,
       createdAt: new Date().toISOString(),
-    };
-    setExpenses((prev) => [...prev, expense]);
+    }
+    setExpenses((prev) => [...prev, expense])
   }
 
   function updateExpense(id: string, patch: Partial<Omit<Expense, "id">>) {
     setExpenses((prev) =>
       prev.map((e) => (e.id === id ? { ...e, ...patch } : e)),
-    );
+    )
   }
 
   function toggleSettled(id: string) {
     setExpenses((prev) =>
       prev.map((e) => (e.id === id ? { ...e, settled: !e.settled } : e)),
-    );
+    )
   }
 
   function removeExpense(id: string) {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    setExpenses((prev) => prev.filter((e) => e.id !== id))
   }
 
   return {
@@ -56,5 +56,5 @@ export function useExpenses() {
     updateExpense,
     toggleSettled,
     removeExpense,
-  };
+  }
 }

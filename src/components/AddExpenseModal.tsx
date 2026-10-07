@@ -1,13 +1,13 @@
-import { useEffect } from "react";
-import type { NewExpenseInput } from "../hooks/useExpenses";
-import { ExpenseForm } from "./ExpenseForm";
-import styles from "./EditExpenseModal.module.css";
+import { useEffect } from "react"
+import type { NewExpenseInput } from "../hooks/useExpenses"
+import { ExpenseForm } from "./ExpenseForm"
+import styles from "./EditExpenseModal.module.css"
 
 type Props = {
   /** 登録確定時に呼ばれる。モーダルは登録後に自動で閉じる */
-  onSubmit: (input: NewExpenseInput) => void;
-  onClose: () => void;
-};
+  onSubmit: (input: NewExpenseInput) => void
+  onClose: () => void
+}
 
 /**
  * 記録の新規追加フォームを画面中央のモーダルで表示する。
@@ -20,15 +20,15 @@ export function AddExpenseModal({ onSubmit, onClose }: Props) {
   // Escape キーで閉じる（登録せずに破棄）
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onClose()
     }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [onClose])
 
   function handleSubmit(input: NewExpenseInput) {
-    onSubmit(input);
-    onClose();
+    onSubmit(input)
+    onClose()
   }
 
   return (
@@ -36,7 +36,7 @@ export function AddExpenseModal({ onSubmit, onClose }: Props) {
       className={styles.overlay}
       onClick={(e) => {
         // パネル外（オーバーレイ自体）のクリックのみ閉じる
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onClose()
       }}
     >
       <div
@@ -60,5 +60,5 @@ export function AddExpenseModal({ onSubmit, onClose }: Props) {
         <ExpenseForm onSubmit={handleSubmit} />
       </div>
     </div>
-  );
+  )
 }

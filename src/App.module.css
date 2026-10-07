@@ -66,7 +66,9 @@
   line-height: 1;
   box-shadow: var(--shadow-md);
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.05s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.05s ease;
 }
 
 .addButton:hover {

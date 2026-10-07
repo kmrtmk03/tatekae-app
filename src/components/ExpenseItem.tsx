@@ -1,13 +1,13 @@
-import type { Expense } from "../types/expense";
-import { formatAmount, formatDate } from "../lib/format";
-import styles from "./ExpenseItem.module.css";
+import type { Expense } from "../types/expense"
+import { formatAmount, formatDate } from "../lib/format"
+import styles from "./ExpenseItem.module.css"
 
 type Props = {
-  expense: Expense;
-  onToggleSettled: (id: string) => void;
-  onEdit: (expense: Expense) => void;
-  onRemove: (id: string) => void;
-};
+  expense: Expense
+  onToggleSettled: (id: string) => void
+  onEdit: (expense: Expense) => void
+  onRemove: (id: string) => void
+}
 
 export function ExpenseItem({
   expense,
@@ -15,11 +15,11 @@ export function ExpenseItem({
   onEdit,
   onRemove,
 }: Props) {
-  const checkboxId = `settled-${expense.id}`;
+  const checkboxId = `settled-${expense.id}`
 
   function handleRemove() {
     if (window.confirm(`「${expense.title}」を削除しますか？`)) {
-      onRemove(expense.id);
+      onRemove(expense.id)
     }
   }
 
@@ -55,5 +55,5 @@ export function ExpenseItem({
         ×
       </button>
     </li>
-  );
+  )
 }
