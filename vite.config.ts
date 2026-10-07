@@ -4,6 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    // 0.0.0.0 で待ち受け、同じ Wi-Fi 内の実機（iPhone 等）から http://<PCのIP>:5173 で開けるようにする
+    host: true,
+  },
   plugins: [
     react(),
     VitePWA({
