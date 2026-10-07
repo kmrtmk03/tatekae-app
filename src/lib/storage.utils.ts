@@ -1,14 +1,14 @@
-import type { Expense } from "../types/expense"
+import type { IExpense } from "../types/expense.type"
 
 const STORAGE_KEY = "tatekae-app/expenses/v1"
 const STORAGE_VERSION = 1
 
-type StoredData = {
+interface IStoredData {
   version: number
-  expenses: Expense[]
+  expenses: IExpense[]
 }
 
-function isExpense(value: unknown): value is Expense {
+function isExpense(value: unknown): value is IExpense {
   if (typeof value !== "object" || value === null) return false
   const v = value as Record<string, unknown>
   return (
@@ -25,12 +25,12 @@ function isExpense(value: unknown): value is Expense {
  * localStorage から記録一覧を読み込む。
  * JSON パース失敗や想定外の形式のときは空配列にフォールバックする（例外を投げない）。
  */
-export function loadExpenses(): Expense[] {
+export function loadExpenses(): IExpense[] {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (raw === null) return []
 
   try {
-    const parsed = JSON.parse(raw) as StoredData
+    const parsed = JSON.parse(raw) as IStoredData
     if (!Array.isArray(parsed?.expenses)) return []
     return parsed.expenses.filter(isExpense)
   } catch {
@@ -42,7 +42,7 @@ export function loadExpenses(): Expense[] {
  * localStorage へ記録一覧を保存する。
  * 容量超過などの例外は握りつぶさず呼び出し元に伝播させる。
  */
-export function saveExpenses(expenses: Expense[]): void {
-  const data: StoredData = { version: STORAGE_VERSION, expenses }
+export function saveExpenses(expenses: IExpense[]): void {
+  const data: IStoredData = { version: STORAGE_VERSION, expenses }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }

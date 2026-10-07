@@ -1,11 +1,11 @@
 import { useRef, useState } from "react"
 import type { FormEvent } from "react"
-import type { NewExpenseInput } from "../hooks/useExpenses"
-import { validateExpenseInput } from "../lib/validation"
+import type { TExpenseInput } from "../types/expense.type"
+import { validateExpenseInput } from "../lib/validation.utils"
 import styles from "./ExpenseForm.module.css"
 
-type Props = {
-  onSubmit: (input: NewExpenseInput) => void
+interface IExpenseFormProps {
+  onSubmit: (input: TExpenseInput) => void
 }
 
 function todayISO(): string {
@@ -16,7 +16,7 @@ function todayISO(): string {
   return `${year}-${month}-${day}`
 }
 
-export function ExpenseForm({ onSubmit }: Props) {
+export function ExpenseForm({ onSubmit }: IExpenseFormProps) {
   const [date, setDate] = useState(todayISO)
   const [title, setTitle] = useState("")
   const [amount, setAmount] = useState("")

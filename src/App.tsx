@@ -3,13 +3,12 @@ import styles from "./App.module.css"
 import { AddExpenseModal } from "./components/AddExpenseModal"
 import { EditExpenseModal } from "./components/EditExpenseModal"
 import { ExpenseList } from "./components/ExpenseList"
-import type { ExpenseFilter } from "./components/FilterTabs"
 import { FilterTabs } from "./components/FilterTabs"
 import { MonthFilter } from "./components/MonthFilter"
 import { SummaryBar } from "./components/SummaryBar"
 import { useExpenses } from "./hooks/useExpenses"
-import { ALL_MONTHS, getMonthKey, listMonthKeys } from "./lib/month"
-import type { Expense } from "./types/expense"
+import { ALL_MONTHS, getMonthKey, listMonthKeys } from "./lib/month.utils"
+import type { IExpense, TExpenseFilter } from "./types/expense.type"
 
 function App() {
   const {
@@ -20,10 +19,10 @@ function App() {
     removeExpense,
     saveError,
   } = useExpenses()
-  const [filter, setFilter] = useState<ExpenseFilter>("all")
+  const [filter, setFilter] = useState<TExpenseFilter>("all")
   // 選択中の月（ALL_MONTHS または 'YYYY-MM'）
   const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS)
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const [editingExpense, setEditingExpense] = useState<IExpense | null>(null)
   // 新規追加モーダルの開閉状態
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 

@@ -1,11 +1,11 @@
-import type { Expense } from "../types/expense"
-import { formatAmount, formatDate } from "../lib/format"
+import type { IExpense } from "../types/expense.type"
+import { formatAmount, formatDate } from "../lib/format.utils"
 import styles from "./ExpenseItem.module.css"
 
-type Props = {
-  expense: Expense
+interface IExpenseItemProps {
+  expense: IExpense
   onToggleSettled: (id: string) => void
-  onEdit: (expense: Expense) => void
+  onEdit: (expense: IExpense) => void
   onRemove: (id: string) => void
 }
 
@@ -14,7 +14,7 @@ export function ExpenseItem({
   onToggleSettled,
   onEdit,
   onRemove,
-}: Props) {
+}: IExpenseItemProps) {
   const checkboxId = `settled-${expense.id}`
 
   function handleRemove() {

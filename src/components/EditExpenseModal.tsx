@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
-import type { Expense } from "../types/expense"
-import { validateExpenseInput } from "../lib/validation"
+import type { IExpense, TExpenseInput } from "../types/expense.type"
+import { validateExpenseInput } from "../lib/validation.utils"
 import formStyles from "./ExpenseForm.module.css"
 import styles from "./EditExpenseModal.module.css"
 
-type Props = {
-  expense: Expense
-  onSave: (
-    id: string,
-    patch: Pick<Expense, "date" | "title" | "amount">,
-  ) => void
+interface IEditExpenseModalProps {
+  expense: IExpense
+  onSave: (id: string, patch: TExpenseInput) => void
   onClose: () => void
 }
 
-export function EditExpenseModal({ expense, onSave, onClose }: Props) {
+export function EditExpenseModal({
+  expense,
+  onSave,
+  onClose,
+}: IEditExpenseModalProps) {
   const [date, setDate] = useState(expense.date)
   const [title, setTitle] = useState(expense.title)
   const [amount, setAmount] = useState(String(expense.amount))

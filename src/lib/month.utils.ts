@@ -1,4 +1,4 @@
-import type { Expense } from "../types/expense"
+import type { IExpense } from "../types/expense.type"
 
 /** 月フィルタで「すべての月」を表す値 */
 export const ALL_MONTHS = "all"
@@ -16,7 +16,7 @@ export function getMonthKey(date: string): string | null {
  * 記録が存在する月の月キー（'YYYY-MM'）を新しい順に返す。
  * 日付の形式が不正な記録は月の候補に含めない（「すべての月」では表示される）。
  */
-export function listMonthKeys(expenses: Expense[]): string[] {
+export function listMonthKeys(expenses: IExpense[]): string[] {
   const monthKeys = new Set<string>()
   for (const expense of expenses) {
     const monthKey = getMonthKey(expense.date)

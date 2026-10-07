@@ -1,19 +1,18 @@
+import type { TExpenseFilter } from "../types/expense.type"
 import styles from "./FilterTabs.module.css"
 
-export type ExpenseFilter = "all" | "unsettled" | "settled"
-
-type Props = {
-  value: ExpenseFilter
-  onChange: (value: ExpenseFilter) => void
+interface IFilterTabsProps {
+  value: TExpenseFilter
+  onChange: (value: TExpenseFilter) => void
 }
 
-const OPTIONS: { value: ExpenseFilter; label: string }[] = [
+const OPTIONS: { value: TExpenseFilter; label: string }[] = [
   { value: "all", label: "すべて" },
   { value: "unsettled", label: "未清算" },
   { value: "settled", label: "清算済み" },
 ]
 
-export function FilterTabs({ value, onChange }: Props) {
+export function FilterTabs({ value, onChange }: IFilterTabsProps) {
   return (
     <div className={styles.tabs} role="tablist" aria-label="表示フィルタ">
       {OPTIONS.map((option) => (

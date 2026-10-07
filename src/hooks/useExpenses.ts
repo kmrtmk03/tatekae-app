@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react"
-import type { Expense } from "../types/expense"
-import { loadExpenses, saveExpenses } from "../lib/storage"
-
-export type NewExpenseInput = {
-  date: string
-  title: string
-  amount: number
-}
+import type { IExpense, TExpenseInput } from "../types/expense.type"
+import { loadExpenses, saveExpenses } from "../lib/storage.utils"
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>(() => loadExpenses())
+  const [expenses, setExpenses] = useState<IExpense[]>(() => loadExpenses())
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -21,8 +15,8 @@ export function useExpenses() {
     }
   }, [expenses])
 
-  function addExpense(input: NewExpenseInput) {
-    const expense: Expense = {
+  function addExpense(input: TExpenseInput) {
+    const expense: IExpense = {
       id: crypto.randomUUID(),
       date: input.date,
       title: input.title,
@@ -33,7 +27,7 @@ export function useExpenses() {
     setExpenses((prev) => [...prev, expense])
   }
 
-  function updateExpense(id: string, patch: Partial<Omit<Expense, "id">>) {
+  function updateExpense(id: string, patch: Partial<Omit<IExpense, "id">>) {
     setExpenses((prev) =>
       prev.map((e) => (e.id === id ? { ...e, ...patch } : e)),
     )

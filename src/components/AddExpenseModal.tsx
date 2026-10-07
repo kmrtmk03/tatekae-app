@@ -1,11 +1,11 @@
 import { useEffect } from "react"
-import type { NewExpenseInput } from "../hooks/useExpenses"
+import type { TExpenseInput } from "../types/expense.type"
 import { ExpenseForm } from "./ExpenseForm"
 import styles from "./EditExpenseModal.module.css"
 
-type Props = {
+interface IAddExpenseModalProps {
   /** 登録確定時に呼ばれる。モーダルは登録後に自動で閉じる */
-  onSubmit: (input: NewExpenseInput) => void
+  onSubmit: (input: TExpenseInput) => void
   onClose: () => void
 }
 
@@ -16,7 +16,7 @@ type Props = {
  * EditExpenseModal.module.css を共用している。
  * 開くたびにマウントされるため、日付は常に当日へ初期化される。
  */
-export function AddExpenseModal({ onSubmit, onClose }: Props) {
+export function AddExpenseModal({ onSubmit, onClose }: IAddExpenseModalProps) {
   // Escape キーで閉じる（登録せずに破棄）
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -26,7 +26,7 @@ export function AddExpenseModal({ onSubmit, onClose }: Props) {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [onClose])
 
-  function handleSubmit(input: NewExpenseInput) {
+  function handleSubmit(input: TExpenseInput) {
     onSubmit(input)
     onClose()
   }

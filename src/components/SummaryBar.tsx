@@ -1,14 +1,14 @@
 import { useMemo } from "react"
-import type { Expense } from "../types/expense"
-import { formatAmount } from "../lib/format"
-import { sumAll, sumUnsettled } from "../lib/summary"
+import type { IExpense } from "../types/expense.type"
+import { formatAmount } from "../lib/format.utils"
+import { sumAll, sumUnsettled } from "../lib/summary.utils"
 import styles from "./SummaryBar.module.css"
 
-type Props = {
-  expenses: Expense[]
+interface ISummaryBarProps {
+  expenses: IExpense[]
 }
 
-export function SummaryBar({ expenses }: Props) {
+export function SummaryBar({ expenses }: ISummaryBarProps) {
   const unsettledTotal = useMemo(() => sumUnsettled(expenses), [expenses])
   const total = useMemo(() => sumAll(expenses), [expenses])
   const unsettledCount = useMemo(

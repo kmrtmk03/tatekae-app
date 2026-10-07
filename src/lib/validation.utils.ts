@@ -1,4 +1,4 @@
-export type ExpenseFormErrors = {
+export interface IExpenseFormErrors {
   title?: string
   amount?: string
 }
@@ -6,8 +6,8 @@ export type ExpenseFormErrors = {
 export function validateExpenseInput(
   title: string,
   amount: string,
-): ExpenseFormErrors {
-  const errors: ExpenseFormErrors = {}
+): IExpenseFormErrors {
+  const errors: IExpenseFormErrors = {}
 
   if (title.trim() === "") {
     errors.title = "項目名を入力してください"

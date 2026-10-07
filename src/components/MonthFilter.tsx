@@ -1,8 +1,8 @@
-import { formatMonth } from "../lib/format"
-import { ALL_MONTHS } from "../lib/month"
+import { formatMonth } from "../lib/format.utils"
+import { ALL_MONTHS } from "../lib/month.utils"
 import styles from "./MonthFilter.module.css"
 
-type Props = {
+interface IMonthFilterProps {
   /** 選択中の値。ALL_MONTHS または 'YYYY-MM' */
   value: string
   /** 記録が存在する月の月キー（'YYYY-MM'）。選択肢として表示する */
@@ -11,7 +11,7 @@ type Props = {
 }
 
 /** 表示する月を絞り込むセレクトボックス（記録が存在する月だけを選択肢に出す） */
-export function MonthFilter({ value, monthKeys, onChange }: Props) {
+export function MonthFilter({ value, monthKeys, onChange }: IMonthFilterProps) {
   return (
     <select
       className={styles.select}
