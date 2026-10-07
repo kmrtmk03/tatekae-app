@@ -34,7 +34,7 @@
 ### 当初計画からの変更点
 
 - **パッケージマネージャー**: npm ではなく **pnpm** に統一済み（`pnpm-lock.yaml` が正、`package-lock.json` は削除済み）。以降のコマンドは `pnpm install` / `pnpm run dev` などを使うこと。
-- **Lint/フォーマッタ**: 当初想定の Prettier + ESLint ではなく、`npm create vite@latest` 最新版が標準採用する **oxlint**（`.oxlintrc.json`）になっている。`pnpm run lint` で実行可能。
+- **Lint/フォーマッタ**: Lint は当初想定の ESLint ではなく、`npm create vite@latest` 最新版が標準採用する **oxlint**（`.oxlintrc.json`）になっている。`pnpm run lint` で実行可能。フォーマッタは当初いったん未導入だったが、リファクタリング時に **Prettier** を導入（下記「リファクタリング」参照）。
 - **技術スタック**: React は 18+ 想定だったが、実際にインストールされたのは **React 19系**。
 - **Phase 7（デプロイ）・Phase 9（Firebase への移行準備）をプランから削除**: 方針変更のため、ユーザー指示により一旦削除（2026-10-07）。進捗表・第6章の詳細・第7章のフロー図・第8章のチェックリスト（公開 / Firebase 移行）から取り除いた。あわせて Firebase 関連の記述（データ保存の第2段階、複数端末同期の要件など）も削除し、データ保存は localStorage のみとした。再開する場合は改めて計画を立て直す
 - **開発サーバーの LAN 公開**: 実機（iPhone）確認のため、`vite.config.ts` に `server.host: true` を追加。`pnpm run dev` で `http://<PCのIP>:5173`（同じ Wi-Fi 内）から開ける。確認はPC側で LAN IP 宛の HTTP 200 まで（実機での表示は未確認）。HTTP の IP アクセスは「安全なコンテキスト」ではないため、Service Worker（PWA）は登録されず、ホーム画面追加・オフライン動作は開発サーバー経由では確認できない
@@ -220,6 +220,22 @@
     - タイトルと月セレクトが1行に収まり、横スクロールは発生しない
   - **未検証**: 実機（iOS Safari）でのセレクトボックスの見た目・操作。月の選択状態はリロードで「すべての月」に戻る（永続化していない）
 
+### リファクタリング（ユーザー指示・ブランチ `refactor/cleanup-structure`）
+グローバル CLAUDE.md の規約に合わせた構造整理。**挙動・見た目は変えない**ことを条件に実施。コミットは性質ごとに分割。
+- **Prettier 導入**: `prettier` を devDependency に追加し、`.prettierrc.json`（セミコロンなし・ダブルクォート・末尾カンマ）と `.prettierignore`（`dist` / `public` / `docs` / `*.md` / `index.html` など）を追加。`pnpm run format` / `pnpm run format:check` を `package.json` に追加。導入時に `src/` 全体と `vite.config.ts` を整形（`src/` のセミコロンは削除され、`main.tsx` 等の単一引用符はダブルクォートに統一）
+- **型名・ファイル名の規約化**: `interface` は `IXxx`、`type` は `TXxx` に統一（`Expense`→`IExpense`、`NewExpenseInput`→`TExpenseInput`、`ExpenseFilter`→`TExpenseFilter`、`ExpenseFormErrors`→`IExpenseFormErrors`、各コンポーネントの `Props`→`IXxxProps` など）。`TExpenseInput` / `TExpenseFilter` は hooks・components から `types/expense.type.ts` に集約。ファイル接尾辞を `*.type.ts` / `*.utils.ts` に統一（`types/expense.ts`→`expense.type.ts`、`lib/*.ts`→`lib/*.utils.ts`）
+- **モーダル・フォームの重複解消**: `Modal.tsx`（オーバーレイ・ヘッダー・Escape/外側クリック）を新設し、`AddExpenseModal` / `EditExpenseModal` が利用。`ExpenseForm` に `initialValues` / `submitLabel` / `onCancel` を追加して編集フォームと統合。モーダル化で不要になった送信後の入力クリア・フォーカス戻しを削除。input の `id` は `useId` で生成。`EditExpenseModal.module.css` は `Modal.module.css` に改名（ボタン類は `ExpenseForm.module.css` へ）
+- **絞り込みロジックの分離**: `App.tsx` から `hooks/useExpenseFilters.ts`（状態・派生値）と `lib/filter.utils.ts` の純粋関数 `filterExpenses` に切り出し。ハンドラは `handleXxx` 命名に統一。`ExpenseList` の `emptyMessage` は必須 prop にしてメッセージの重複定義を解消
+- **`useExpenses` の整理**: 返す操作関数を `useCallback` で安定化し、内部の `handleXxx` を公開名（`addExpense` など）で return。JSDoc とグループ化コメントを追加。保存失敗メッセージは定数化
+- **`storage.utils.ts`**: `JSON.parse(raw) as IStoredData` の型アサーションをやめ、`unknown` + 型ガード（`isStoredData` / `isExpense`）で検証する形に変更
+- **その他**: `SummaryBar` の `useMemo`（軽量な計算）を外し、件数計算を `countUnsettled` として `summary.utils.ts` へ。エラー文言を定数化。最大幅 480px を CSS 変数 `--layout-max-width` に集約。`validation` / `FilterTabs` / `ExpenseItem` などに JSDoc を追加
+- **残した判断**: `useExpenses` の `useEffect` 内 `setState`（oxlint `set-state-in-effect` 警告）は、保存結果を state に反映する設計として引き続き許容。自動テスト（Vitest）は導入していない（ユーザー判断）
+- **検証結果**:
+  - 各コミットで `pnpm exec tsc -b` / `pnpm run build` 成功。最終的に `pnpm run lint`（既知の警告1件のみ）・`pnpm run format:check` も成功
+  - `pnpm run dev` + アプリ内ブラウザ（390×844）で、不正要素を混ぜたテストデータを投入して回帰確認: 不正要素の除外、追加（バリデーションエラー・登録・日付初期値・フォーカス）、編集（初期値・エラー・保存）、4通りの閉じ方、月フィルタと清算状態フィルタの併用、該当なしメッセージ、月を絞った状態でも総額が全件分のまま、選択中の月の最後の1件を削除すると「すべての月」に戻る、清算チェックの切り替えと `localStorage` への反映、`id` が重複しないこと
+  - **未検証**: 実機（iOS Safari）での確認。自動テストは無いため、上記は手動確認のみ
+- **注意**: 上記のファイル名変更により、本書の過去の完了内容（Phase 1〜8 の記述）に出てくる `lib/storage.ts` などの旧名は、現在は `*.utils.ts` になっている
+
 ### 次にやること
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
@@ -311,7 +327,8 @@ export type Expense = {
 | パッケージ管理 | pnpm | リモートで先行導入されたため統一（当初は npm 想定） |
 | 状態管理 | React の `useState` + Context | 規模が小さく、外部ライブラリは不要 |
 | スタイル | CSS Modules | 追加依存なしでスコープが分かれる |
-| フォーマッタ | oxlint | 最新の Vite テンプレートに同梱（当初想定の Prettier + ESLint から変更） |
+| Lint | oxlint | 最新の Vite テンプレートに同梱（当初想定の ESLint から変更） |
+| フォーマッタ | Prettier | リファクタリング時に導入（`.prettierrc.json`: セミコロンなし・ダブルクォート・末尾カンマ） |
 | テスト | Vitest（任意） | 集計ロジックの単体テストに使う |
 
 ---
@@ -326,19 +343,27 @@ tatekae-app/
 │   └── apple-touch-icon.png
 ├── src/
 │   ├── components/
-│   │   ├── ExpenseForm.tsx        # 入力フォーム
+│   │   ├── Modal.tsx              # 共通モーダル（オーバーレイ・ヘッダー・Escape）
+│   │   ├── AddExpenseModal.tsx    # 追加モーダル
+│   │   ├── EditExpenseModal.tsx   # 編集モーダル
+│   │   ├── ExpenseForm.tsx        # 追加・編集共通の入力フォーム
 │   │   ├── ExpenseList.tsx        # 一覧のコンテナ
-│   │   ├── ExpenseItem.tsx        # 1行（チェック・削除）
+│   │   ├── ExpenseItem.tsx        # 1行（チェック・編集・削除）
 │   │   ├── SummaryBar.tsx         # 未清算合計の表示
-│   │   └── FilterTabs.tsx         # 表示フィルタ（MVP後）
+│   │   ├── FilterTabs.tsx         # 清算状態フィルタ
+│   │   └── MonthFilter.tsx        # 月フィルタ
 │   ├── hooks/
-│   │   └── useExpenses.ts         # CRUD と永続化をまとめる
+│   │   ├── useExpenses.ts         # CRUD と永続化をまとめる
+│   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と結果
 │   ├── lib/
-│   │   ├── storage.ts             # localStorage の読み書き
-│   │   ├── format.ts              # 金額・日付の整形
-│   │   └── summary.ts             # 合計計算などの純粋関数
+│   │   ├── storage.utils.ts       # localStorage の読み書き（型ガードで検証）
+│   │   ├── format.utils.ts        # 金額・日付・月の整形
+│   │   ├── summary.utils.ts       # 合計・件数計算などの純粋関数
+│   │   ├── month.utils.ts         # 月キーの取得・一覧化
+│   │   ├── filter.utils.ts        # 記録の絞り込み（純粋関数）
+│   │   └── validation.utils.ts    # フォーム入力の検証
 │   ├── types/
-│   │   └── expense.ts             # Expense 型
+│   │   └── expense.type.ts        # IExpense / TExpenseInput / TExpenseFilter
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css
@@ -350,7 +375,7 @@ tatekae-app/
 └── README.md
 ```
 
-**方針**: 「保存先に依存する処理」を `lib/storage.ts` の1ファイルに閉じ込める。
+**方針**: 「保存先に依存する処理」を `lib/storage.utils.ts` の1ファイルに閉じ込める。
 コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのはこの2ファイルだけで済む。
 
 ---

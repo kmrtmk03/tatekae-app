@@ -11,7 +11,7 @@
 - 詳細な要件・データモデル・実装フェーズは [docs/implementation-plan.md](docs/implementation-plan.md) が正
 - 技術スタック: Vite + React 19 + TypeScript、PWA化には `vite-plugin-pwa`
 - パッケージマネージャーは **pnpm** に統一済み（`npm` / `yarn` は使わない）
-- Lint は **oxlint**（`pnpm run lint`）。当初計画のPrettier+ESLintから変更済み
+- Lint は **oxlint**（`pnpm run lint`）、フォーマッタは **Prettier**（`pnpm run format` / `pnpm run format:check`。セミコロンなし・ダブルクォート・末尾カンマ）。当初計画のESLintからは変更済み。コード変更後は `pnpm run format` を実行してからコミットする
 
 ## 作業引き継ぎルール（重要・毎回必須）
 
