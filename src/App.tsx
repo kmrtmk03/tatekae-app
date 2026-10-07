@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import styles from "./App.module.css"
 import { AddExpenseModal } from "./components/AddExpenseModal"
 import { EditExpenseModal } from "./components/EditExpenseModal"
@@ -6,9 +6,9 @@ import { ExpenseList } from "./components/ExpenseList"
 import { FilterTabs } from "./components/FilterTabs"
 import { MonthFilter } from "./components/MonthFilter"
 import { SummaryBar } from "./components/SummaryBar"
+import { useExpenseFilters } from "./hooks/useExpenseFilters"
 import { useExpenses } from "./hooks/useExpenses"
-import { ALL_MONTHS, getMonthKey, listMonthKeys } from "./lib/month.utils"
-import type { IExpense, TExpenseFilter } from "./types/expense.type"
+import type { IExpense } from "./types/expense.type"
 
 function App() {
   const {
@@ -19,33 +19,32 @@ function App() {
     removeExpense,
     saveError,
   } = useExpenses()
-  const [filter, setFilter] = useState<TExpenseFilter>("all")
-  // 選択中の月（ALL_MONTHS または 'YYYY-MM'）
-  const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS)
+  const {
+    filteredExpenses,
+    emptyMessage,
+    statusFilter,
+    setStatusFilter,
+    monthKeys,
+    activeMonth,
+    setSelectedMonth,
+  } = useExpenseFilters(expenses)
+
+  // 編集モーダルの対象（null なら閉じている）
   const [editingExpense, setEditingExpense] = useState<IExpense | null>(null)
   // 新規追加モーダルの開閉状態
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
-  const monthKeys = useMemo(() => listMonthKeys(expenses), [expenses])
+  function handleOpenAddModal() {
+    setIsAddModalOpen(true)
+  }
 
-  // 選択中の月の記録が削除・編集で無くなった場合は「すべての月」に戻して扱う
-  const activeMonth = monthKeys.includes(selectedMonth)
-    ? selectedMonth
-    : ALL_MONTHS
+  function handleCloseAddModal() {
+    setIsAddModalOpen(false)
+  }
 
-  // 月 → 清算状態の順で絞り込む（SummaryBar には絞り込み前の全件を渡す）
-  const filteredExpenses = useMemo(() => {
-    const monthExpenses =
-      activeMonth === ALL_MONTHS
-        ? expenses
-        : expenses.filter((e) => getMonthKey(e.date) === activeMonth)
-    if (filter === "unsettled") return monthExpenses.filter((e) => !e.settled)
-    if (filter === "settled") return monthExpenses.filter((e) => e.settled)
-    return monthExpenses
-  }, [expenses, activeMonth, filter])
-
-  const emptyMessage =
-    expenses.length === 0 ? "まだ記録がありません" : "該当する記録がありません"
+  function handleCloseEditModal() {
+    setEditingExpense(null)
+  }
 
   return (
     <div className={styles.page}>
@@ -58,8 +57,9 @@ function App() {
             onChange={setSelectedMonth}
           />
         </div>
+        {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
         <SummaryBar expenses={expenses} />
-        <FilterTabs value={filter} onChange={setFilter} />
+        <FilterTabs value={statusFilter} onChange={setStatusFilter} />
       </header>
 
       {saveError && (
@@ -81,24 +81,21 @@ function App() {
       <button
         type="button"
         className={styles.addButton}
-        onClick={() => setIsAddModalOpen(true)}
+        onClick={handleOpenAddModal}
         aria-label="記録を追加"
       >
         ＋
       </button>
 
       {isAddModalOpen && (
-        <AddExpenseModal
-          onSubmit={addExpense}
-          onClose={() => setIsAddModalOpen(false)}
-        />
+        <AddExpenseModal onSubmit={addExpense} onClose={handleCloseAddModal} />
       )}
 
       {editingExpense && (
         <EditExpenseModal
           expense={editingExpense}
           onSave={updateExpense}
-          onClose={() => setEditingExpense(null)}
+          onClose={handleCloseEditModal}
         />
       )}
     </div>
