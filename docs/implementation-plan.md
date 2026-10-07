@@ -237,6 +237,12 @@
 - **コンポーネントのディレクトリ化**: `components/` 直下に並んでいた tsx と `*.module.css` を、コンポーネントごとのディレクトリ（例: `components/ExpenseForm/ExpenseForm.tsx` + `ExpenseForm.module.css`）にまとめた。CSS を持たない `AddExpenseModal` / `EditExpenseModal` も一貫性のため同じ構成。`index.ts`（バレル）は、プロジェクトに既存の採用がないため作成せず、import は `../ExpenseForm/ExpenseForm` のようにファイルを直接指す。ファイルの移動は `git mv` で行い履歴を追える。挙動の変更はなし（`tsc -b` / `pnpm run build` / `pnpm run lint` / `pnpm run format:check` 成功。ブラウザでの再確認は未実施で、import 解決はビルドで確認）
 - **注意**: 上記のファイル名変更により、本書の過去の完了内容（Phase 1〜8 の記述）に出てくる `lib/storage.ts` などの旧名は、現在は `*.utils.ts` になっている
 
+### README の更新（2026-10-07）
+- `README.md` に、主な機能・技術スタック・必要環境・開発手順（LAN 公開の注意を含む）・スクリプト一覧・ディレクトリ構成を、現状に合わせて追記した（計画自体の変更ではないため「当初計画からの変更点」ではなくここに記録）
+- 記述は `package.json`（`engines` / `scripts`）、`.nvmrc`、`src/` の実体と突き合わせて確認済み
+- 利用者向けの注意として、PWA は「オフライン起動はビルド成果物のブラウザ確認まで済み、実機でのホーム画面追加は未検証」、データ保存は「ブラウザの `localStorage` のみで、サイトデータを消すと失われる（同期・バックアップ・エクスポート／インポートは未実装）」と明記した
+- ドキュメントのみの変更でコード・ビルドへの影響はない。Markdown は `.prettierignore` で Prettier の対象外のため、整形チェックは行っていない。ビルド・lint は未実行
+
 ### 次にやること
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
