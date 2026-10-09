@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatAmount, formatMonth } from "./format.utils"
+import { formatAmount, formatMonth } from "../format.utils"
 
 describe("formatAmount", () => {
   it("3 桁ごとにカンマで区切り、先頭に ¥ を付ける", () => {

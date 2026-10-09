@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { sortExpensesNewestFirst } from "./sort.utils"
-import type { IExpense } from "../../types/expense.type"
+import { sortExpensesNewestFirst } from "../sort.utils"
+import type { IExpense } from "../../../types/expense.type"
 
 const BASE = { title: "", amount: 1, settled: false, color: "red" } as const
 

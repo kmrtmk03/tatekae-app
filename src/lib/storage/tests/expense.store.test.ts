@@ -22,7 +22,7 @@ function stubLocalStorage(options?: { failOnSet?: boolean }) {
  */
 async function importStore() {
   vi.resetModules()
-  return import("./expense.store")
+  return import("../expense.store")
 }
 
 const INPUT = {

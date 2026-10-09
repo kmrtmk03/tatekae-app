@@ -3,7 +3,7 @@ import {
   DEFAULT_EXPENSE_COLOR,
   EXPENSE_COLOR_LABELS,
   EXPENSE_COLOR_OPTIONS,
-} from "./expense-color.constants"
+} from "../expense-color.constants"
 
 describe("EXPENSE_COLOR_OPTIONS", () => {
   it("全ての色を重複なく含み、既定色も選択肢にある", () => {
