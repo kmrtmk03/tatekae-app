@@ -1,23 +1,24 @@
 import type { TExpenseInput } from "../types/expense.type"
-import { isMonthKey } from "./month.utils"
+import type { TMonthKey } from "../types/month.type"
 
 const TITLE_REQUIRED_MESSAGE = "項目名を入力してください"
-const MONTH_INVALID_MESSAGE = "精算月を入力してください"
 const AMOUNT_INVALID_MESSAGE = "金額は1円以上の整数で入力してください"
 
 /** 数字だけで構成された文字列かを判定する正規表現。小数点・指数表記（1.5 / 1e3）・符号を弾く */
 const DIGITS_ONLY_PATTERN = /^\d+$/
 
-/** フォームが持つ入力中の値。すべて文字列のまま受け取り、parseExpenseInput で検証・変換する */
+/**
+ * フォームが持つ入力中の値。項目名・金額は文字列のまま受け取り、parseExpenseInput で検証・変換する。
+ * 精算月は MonthPicker が妥当な月キーしか返さないため、検証済みの型（TMonthKey）で受け取る。
+ */
 export interface IExpenseFormValues {
-  month: string
+  month: TMonthKey
   title: string
   amount: string
 }
 
 /** 入力欄ごとのエラー文言。エラーのない項目は undefined */
 export interface IExpenseFormErrors {
-  month?: string
   title?: string
   amount?: string
 }
@@ -28,7 +29,7 @@ export type TParseExpenseInputResult =
 
 /**
  * 追加・編集フォームの入力値を検証し、保存用の TExpenseInput に変換する。
- * 精算月は 'YYYY-MM' 形式のみ、項目名は空白のみを不可とし、金額は 1 円以上の整数のみ許可する。
+ * 項目名は空白のみを不可とし、金額は 1 円以上の整数のみ許可する。
  * 成功したときの value は項目名の前後の空白を除き、金額を数値にしたもの。
  * 呼び出し側は ok で分岐し、失敗時は errors を画面に出すこと。
  */
@@ -42,13 +43,6 @@ export function parseExpenseInput(
     errors.title = TITLE_REQUIRED_MESSAGE
   }
 
-  // input[type="month"] は未入力や不完全な入力のとき空文字を返す。Safari(PC) など非対応ブラウザでは
-  // テキスト入力になるため、'YYYY-MM' 形式（月は 01〜12）かどうかを型ガードで確認する
-  const month = values.month
-  if (!isMonthKey(month)) {
-    errors.month = MONTH_INVALID_MESSAGE
-  }
-
   const amountText = values.amount.trim()
   const amount = Number(amountText)
   if (
@@ -59,9 +53,6 @@ export function parseExpenseInput(
     errors.amount = AMOUNT_INVALID_MESSAGE
   }
 
-  // isMonthKey で型が絞られるのは month が妥当な場合のみ。エラーがあれば先に返す
-  if (Object.keys(errors).length > 0 || !isMonthKey(month)) {
-    return { ok: false, errors }
-  }
-  return { ok: true, value: { month, title, amount } }
+  if (Object.keys(errors).length > 0) return { ok: false, errors }
+  return { ok: true, value: { month: values.month, title, amount } }
 }

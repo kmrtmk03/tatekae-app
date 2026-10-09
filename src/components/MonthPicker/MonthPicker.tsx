@@ -19,8 +19,6 @@ interface IMonthPickerProps {
   value: TMonthKey
   /** 月を選んだときに呼ばれる。選択後、一覧は自動で閉じる */
   onChange: (value: TMonthKey) => void
-  /** 入力エラーの文言。指定すると入力欄の下に表示する */
-  error?: string
 }
 
 /**
@@ -30,12 +28,7 @@ interface IMonthPickerProps {
  * - 一覧は同じ位置に展開する（ポップアップにしない）ため、モーダルの中でも重ならない
  * - 一覧を開いている間の Escape は一覧だけを閉じ、親のモーダルは閉じない
  */
-export function MonthPicker({
-  label,
-  value,
-  onChange,
-  error,
-}: IMonthPickerProps) {
+export function MonthPicker({ label, value, onChange }: IMonthPickerProps) {
   const triggerId = useId()
   const listId = useId()
   const selected = parseMonthKey(value)
@@ -124,12 +117,6 @@ export function MonthPicker({
             })}
           </div>
         </div>
-      )}
-
-      {error && (
-        <p className={styles.errorText} role="alert">
-          {error}
-        </p>
       )}
     </div>
   )

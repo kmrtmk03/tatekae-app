@@ -110,9 +110,3 @@
   color: var(--color-on-primary);
   font-weight: 700;
 }
-
-.errorText {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--color-danger);
-}

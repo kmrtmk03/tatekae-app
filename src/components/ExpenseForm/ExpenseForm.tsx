@@ -37,12 +37,7 @@ export function ExpenseForm({
         error={errors.title}
       />
 
-      <MonthPicker
-        label="精算月"
-        value={values.month}
-        onChange={setMonth}
-        error={errors.month}
-      />
+      <MonthPicker label="精算月" value={values.month} onChange={setMonth} />
 
       <FormField
         label="金額"
