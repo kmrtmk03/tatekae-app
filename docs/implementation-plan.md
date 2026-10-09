@@ -32,6 +32,7 @@
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
 | 日付→精算月への変更 | 🔧 レビュー待ち | ブランチ `feat/expense-month-only`。入力を日単位から月単位（立替精算する月）へ変更。下記「日付から精算月への変更」参照 |
 | 新規作成時のラベル色（5色） | 🔧 実装済み・目視未確認 | 追加フォームで5色から選び、一覧の左端に色の帯で表示。下記「ラベル色」参照 |
+| ラベル色での絞り込み | 🔧 実装済み・目視未確認 | ブランチ `feat/expense-color-filter`。月と色を同じ「絞り込み」モーダルで設定。下記「ラベル色フィルタ」参照 |
 | Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 
@@ -303,7 +304,15 @@
 - UI: 追加フォームに `ColorPicker`（`isColorSelectable` 指定時のみ表示）、`ExpenseItem` の左端に色の帯
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（22件）通過。ブラウザでの目視確認・実機（iOS Safari）は**未実施**
 
+### ラベル色フィルタ（ユーザー指示・2026-10-09）
+- ヘッダー右の月セレクトを `FilterButton`（「絞り込み」＋有効条件数のバッジ）に置き換え、押すと `FilterModal` が開く。モーダルに精算月（`MonthFilter` をモーダル内用に全幅化・`id` 受け取りに変更）とラベル色（`ColorFilter`: 「すべて」＋5色）を置いた。選択は即時に一覧へ反映され、「解除」で月・色を初期化、「完了」で閉じる
+- 清算状態のタブ（`FilterTabs`）はヘッダーに残した（モーダルに入れるのは月と色のみ）
+- `filterExpenses` に `color` 条件を追加（月 → 色 → 清算状態の順）。`useExpenseFilters` に `colorFilter` / `activeFilterCount` / `resetFilters` を追加。フィルタ状態は従来どおり永続化しない
+- `ColorFilter` と `ColorPicker` / `ExpenseItem` で色クラスのCSSが重複している（CSS Modules の制約。色が増えるときは3か所を直す）
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（25件、`filter.utils.test.ts` 追加）通過。ブラウザでの目視・実機は**未実施**
+
 ### 次にやること
+- ラベル色フィルタ（絞り込みモーダル）の目視確認
 - ラベル色の目視確認（追加フォームの色選択、一覧の帯、ダークモード）
 - Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
