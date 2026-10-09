@@ -31,6 +31,7 @@
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
 | 日付→精算月への変更 | 🔧 レビュー待ち | ブランチ `feat/expense-month-only`。入力を日単位から月単位（立替精算する月）へ変更。下記「日付から精算月への変更」参照 |
+| 新規作成時のラベル色（5色） | 🔧 実装済み・目視未確認 | 追加フォームで5色から選び、一覧の左端に色の帯で表示。下記「ラベル色」参照 |
 | Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 
@@ -295,7 +296,15 @@
 - 実機（iOS Safari）での確認は未実施。`tsc -b` / `lint` / `format:check` / `pnpm test`（21件）は通過、`pnpm run build` も成功
 - 注意: `index.html` の `<title>` とアプリ内の h1 見出しが無くなったため、見出し構造（アクセシビリティ）は未対応
 
+### ラベル色（ユーザー指示・2026-10-09）
+- 解釈: アプリに「ラベル」という概念が無かったため、「記録（IExpense）に付ける色」と解釈した。色は**新規作成時のみ**選べ、編集では変更しない（`updateExpense` は色を書き換えない）。別の意図（例: 月やカテゴリのラベル）なら要相談
+- 色は `red / orange / green / blue / purple` の5色（`TExpenseColor`、選択肢と既定色 `blue` は `lib/expense-color.constants.ts`）。色トークンは `index.css` の `--color-label-*`（ダークモード用も定義）
+- `IExpense.color` を追加。localStorage に色が無い旧データ・不正値は、記録を捨てず既定色（青）で読み込む（保存形式の version は据え置き）
+- UI: 追加フォームに `ColorPicker`（`isColorSelectable` 指定時のみ表示）、`ExpenseItem` の左端に色の帯
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（22件）通過。ブラウザでの目視確認・実機（iOS Safari）は**未実施**
+
 ### 次にやること
+- ラベル色の目視確認（追加フォームの色選択、一覧の帯、ダークモード）
 - Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
