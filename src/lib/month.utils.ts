@@ -41,12 +41,15 @@ export function toMonthKey(year: number, month: number): TMonthKey | null {
   return isMonthKey(monthKey) ? monthKey : null
 }
 
-/** 今月の月キーを 'YYYY-MM' で返す（タイムゾーンのずれを避けるためローカル日時で組み立てる） */
+/**
+ * 今月の月キーを 'YYYY-MM' で返す（タイムゾーンのずれを避けるためローカル日時から求める）。
+ * 端末の日時が 4 桁の年で表せない異常な値のときだけ例外を投げる。
+ */
 export function currentMonthKey(): TMonthKey {
   const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  return `${year}-${month}` as TMonthKey
+  const monthKey = toMonthKey(now.getFullYear(), now.getMonth() + 1)
+  if (monthKey === null) throw new Error("現在の年月を月キーに変換できません")
+  return monthKey
 }
 
 /**
