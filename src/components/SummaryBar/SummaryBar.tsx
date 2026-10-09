@@ -1,6 +1,6 @@
 import type { IExpense } from "../../types/expense.type"
 import { formatAmount } from "../../lib/format.utils"
-import { countUnsettled, sumUnsettled } from "../../lib/summary.utils"
+import { countUnsettled, sumUnsettled } from "../../lib/expense/summary.utils"
 import styles from "./SummaryBar.module.css"
 
 interface ISummaryBarProps {

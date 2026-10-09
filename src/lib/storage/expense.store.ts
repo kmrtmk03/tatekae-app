@@ -10,7 +10,7 @@ import type {
   IExpense,
   TExpenseInput,
   TNewExpenseInput,
-} from "../types/expense.type"
+} from "../../types/expense.type"
 import { loadExpenses, saveExpenses } from "./storage.utils"
 
 /** localStorage への保存に失敗したときに画面へ出すメッセージ */

@@ -1,4 +1,4 @@
-import type { TExpenseColor } from "../types/expense.type"
+import type { TExpenseColor } from "../../types/expense.type"
 
 /**
  * ラベル色ごとの色名（スクリーンリーダー向け）。

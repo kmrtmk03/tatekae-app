@@ -6,8 +6,8 @@ import {
   listMonthKeys,
   parseMonthKey,
   toMonthKey,
-} from "./month.utils"
-import type { IExpense } from "../types/expense.type"
+} from "../month.utils"
+import type { IExpense } from "../../types/expense.type"
 
 describe("isMonthKey", () => {
   it("YYYY-MM（月は 01〜12）だけを月キーとして受け入れる", () => {

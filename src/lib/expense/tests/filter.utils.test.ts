@@ -4,9 +4,9 @@ import {
   filterExpenses,
   matchesFilter,
   toggleColorSelection,
-} from "./filter.utils"
-import type { IExpenseFilterCondition } from "./filter.utils"
-import type { IExpense } from "../types/expense.type"
+} from "../filter.utils"
+import type { IExpenseFilterCondition } from "../filter.utils"
+import type { IExpense } from "../../../types/expense.type"
 
 const BASE = { title: "", amount: 1, createdAt: "" }
 

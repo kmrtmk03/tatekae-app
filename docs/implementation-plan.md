@@ -35,6 +35,8 @@
 | ラベル色での絞り込み | 🔧 実装済み・実機未確認 | ブランチ `feat/expense-color-filter`。月と色を同じ「絞り込み」モーダルで設定。下記「ラベル色フィルタ」参照 |
 | Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
+| コンポーネント・フックのテスト追加 | 🔧 実装済み・レビュー待ち | ブランチ `feat/add-component-tests`。Testing Library と jsdom を導入し、lib の未テスト関数・フック・一部コンポーネントのテストを追加。下記「テストの追加」参照 |
+| `lib/` のドメイン別整理 | 🔧 実装済み・レビュー待ち | ブランチ `refactor/organize-lib`（`feat/add-component-tests` から分岐）。下記「lib のドメイン別整理」参照 |
 
 ### 当初計画からの変更点
 
@@ -334,8 +336,28 @@
 4. **`ColorSwatchGroup` を新設**: 見出し付きの色ボタン外枠を `ColorPicker` / `ColorFilter` で共用し、重複していた CSS を削除（`ColorPicker.module.css` は不要になり削除。色ボタンの間隔は 8px に統一）
 5. **`useExpenseFilters` の戻り値を明示列挙**: スプレッド展開をやめ、グループごとのコメント付きで返す
 6. **色の網羅性を型で保証**: `EXPENSE_COLOR_LABELS: Record<TExpenseColor, string>` を追加し、選択肢はその並び順リストから生成。並び順リストの網羅は `expense-color.constants.test.ts` で確認（`index.css` の色トークン・`[data-color]` ルールは手動同期のためコメントで明記）
-7. **テスト追加**: トグル・有効条件数は `filter.utils.ts` の純粋関数（`toggleColorSelection` / `countActiveFilters`）に出してテスト。`@testing-library` が未導入のためフック・モーダルの描画テストは**未追加**
+7. **テスト追加**: トグル・有効条件数は `filter.utils.ts` の純粋関数（`toggleColorSelection` / `countActiveFilters`）に出してテスト。`@testing-library` が未導入のためフック・モーダルの描画テストは未追加（後日「テストの追加」で一部導入）
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（38件）通過。ブラウザ（390×844）で、v2 の保存データが既定色で読み込まれること、赤で絞り込み中に青の記録を追加すると絞り込みが解除されて一覧に出ることを確認。iOS Safari 実機は未確認
+
+### テストの追加（ユーザー指示・ブランチ `feat/add-component-tests`・2026-10-09）
+- **依存追加**（devDependencies）: `@testing-library/react` / `@testing-library/dom` / `@testing-library/user-event` / `jsdom`。`jest-dom` は入れず、標準の assertion（`toBeTruthy` / `toBe` 等）で書いた
+- **環境の切り替え**: 既定は node のまま（lib のテストは従来どおり）。DOM が要るテストだけ、ファイル先頭に `// @vitest-environment jsdom` を書く。`vite.config.ts` は変更していない
+- **追加したテスト**（`pnpm test` は 15 ファイル・86 件）
+  - lib: `format.utils` / `sort.utils` / `summary.utils`
+  - hooks（`renderHook`）: `useModalState`（関数の参照安定化を含む）/ `useMonthColorFilters`（選択中の月が消えたときの補正）/ `useExpenseFilters`（組み合わせ絞り込み・空メッセージ・`revealNewExpense`）
+  - コンポーネント: `SummaryBar` / `ExpenseItem`（清算・編集・削除の確認ダイアログ）/ `ExpenseForm`（送信・検証エラー・初期値・キャンセル）
+- **未追加**: `Modal`（Escape・オーバーレイ）/ `MonthPicker` / `FilterModal` / `App` 全体の結合テスト、E2E（Playwright）。CSS Modules の見た目は対象外
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。ブラウザでの目視確認は不要な変更（アプリ本体のコードは未変更）
+
+### lib のドメイン別整理（ユーザー指示・ブランチ `refactor/organize-lib`・2026-10-09）
+- フラットだった `lib/`（実装 9 ファイル＋テスト）を、機能のまとまりでサブディレクトリに分けた。ファイルの中身は変更せず、移動（`git mv`）と import パスの付け替えのみ
+  - `lib/expense/`: `expense-color.constants` / `filter.utils` / `sort.utils` / `summary.utils` / `validation.utils`
+  - `lib/storage/`: `storage.utils` / `expense.store`
+  - `lib/` 直下: `month.utils` / `format.utils`（`expense` と `storage` の両方から使われるため、どちらにも入れていない）
+- テストは各ディレクトリ内の `tests/` に置く（`lib/tests/` = month・format、`lib/expense/tests/`、`lib/storage/tests/`）。テスト内の import は `../xxx` に付け替えた。バレル（`index.ts`）は作っていない
+- **hooks のテストも `hooks/tests/` に移動**（`useModalState` / `useMonthColorFilters` / `useExpenseFilters`）。`lib/` と `hooks/` は `tests/`、components は従来どおり対象と同じディレクトリに置く
+- `CLAUDE.md` / `.claude/rules/implementation.md` / 本書の構成図のパス表記を更新。過去の作業記録（各リファクタリングの節）の旧パスは当時の記録として残している
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。アプリの挙動は変えていない
 
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
@@ -343,6 +365,7 @@
 - Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
+- テスト未追加の `Modal` / `MonthPicker` / `FilterModal` / `App` 結合テストの追加を検討する
 - 必要なら D（`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
@@ -461,18 +484,21 @@ tatekae-app/
 │   │   ├── FilterTabs/            # 清算状態フィルタ
 │   │   └── MonthSelect/           # 月の絞り込みセレクト（絞り込みモーダル内）
 │   ├── hooks/
-│   │   ├── useExpenses.ts         # 記録の取得と操作（lib/expense.store.ts を購読する薄いラッパー）
+│   │   ├── useExpenses.ts         # 記録の取得と操作（lib/storage/expense.store.ts を購読する薄いラッパー）
 │   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と、絞り込み後・新しい順の結果
 │   ├── lib/
-│   │   ├── storage.utils.ts       # localStorage の読み書き（型ガードで検証）
-│   │   ├── expense.store.ts       # 記録の保持・保存（変更操作の中で保存。useSyncExternalStore 用）
-│   │   ├── format.utils.ts        # 金額・日付・月の整形
-│   │   ├── summary.utils.ts       # 合計・件数計算などの純粋関数
-│   │   ├── date.utils.ts          # 今日の日付・日付の分解
+│   │   ├── format.utils.ts        # 金額・月の整形
 │   │   ├── month.utils.ts         # 月キーの取得・一覧化・型ガード
-│   │   ├── sort.utils.ts          # 記録の並べ替え（新しい順）
-│   │   ├── filter.utils.ts        # 記録の絞り込み（純粋関数）
-│   │   └── validation.utils.ts    # フォーム入力の検証・変換（parseExpenseInput）
+│   │   ├── expense/
+│   │   │   ├── expense-color.constants.ts # ラベル色の定数・選択肢
+│   │   │   ├── filter.utils.ts    # 記録の絞り込み（純粋関数）
+│   │   │   ├── sort.utils.ts      # 記録の並べ替え（新しい順）
+│   │   │   ├── summary.utils.ts   # 合計・件数計算などの純粋関数
+│   │   │   ├── validation.utils.ts # フォーム入力の検証・変換（parseExpenseInput）
+│   │   │   └── tests/             # 上記のテスト（lib/tests/・lib/storage/tests/ も同様）
+│   │   └── storage/
+│   │       ├── storage.utils.ts   # localStorage の読み書き（型ガードで検証）
+│   │       └── expense.store.ts   # 記録の保持・保存（変更操作の中で保存。useSyncExternalStore 用）
 │   ├── types/
 │   │   ├── expense.type.ts        # IExpense / TExpenseInput / TExpenseFilter
 │   │   └── month.type.ts          # TMonthKey / TMonthFilter
@@ -487,8 +513,8 @@ tatekae-app/
 └── README.md
 ```
 
-**方針**: 「保存先に依存する処理」を `lib/storage.utils.ts` の1ファイルに閉じ込める。
-記録の保持・保存は `lib/expense.store.ts` が担い、コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのは `storage.utils.ts` と `expense.store.ts` で済む。
+**方針**: 「保存先に依存する処理」を `lib/storage/storage.utils.ts` の1ファイルに閉じ込める。
+記録の保持・保存は `lib/storage/expense.store.ts` が担い、コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのは `storage.utils.ts` と `expense.store.ts` で済む。
 
 ---
 

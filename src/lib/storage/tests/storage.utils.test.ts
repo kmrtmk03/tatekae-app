@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { loadExpenses, saveExpenses } from "./storage.utils"
-import type { IExpense } from "../types/expense.type"
+import { loadExpenses, saveExpenses } from "../storage.utils"
+import type { IExpense } from "../../../types/expense.type"
 
 const KEY_V1 = "tatekae-app/expenses/v1"
 const KEY_V2 = "tatekae-app/expenses/v2"

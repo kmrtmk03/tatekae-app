@@ -1,4 +1,4 @@
-import { EXPENSE_COLOR_OPTIONS } from "../../lib/expense-color.constants"
+import { EXPENSE_COLOR_OPTIONS } from "../../lib/expense/expense-color.constants"
 import type { TExpenseColor } from "../../types/expense.type"
 import { ColorSwatch } from "../ColorSwatch/ColorSwatch"
 import { ColorSwatchGroup } from "../ColorSwatchGroup/ColorSwatchGroup"
