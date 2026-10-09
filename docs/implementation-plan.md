@@ -354,7 +354,8 @@
   - `lib/expense/`: `expense-color.constants` / `filter.utils` / `sort.utils` / `summary.utils` / `validation.utils`
   - `lib/storage/`: `storage.utils` / `expense.store`
   - `lib/` 直下: `month.utils` / `format.utils`（`expense` と `storage` の両方から使われるため、どちらにも入れていない）
-- テストは各ディレクトリ内の `tests/` に置く（`lib/tests/` = month・format、`lib/expense/tests/`、`lib/storage/tests/`）。`lib/` 配下だけの方針で、hooks・components のテストは従来どおり対象と同じディレクトリ。テスト内の import は `../xxx` に付け替えた。バレル（`index.ts`）は作っていない
+- テストは各ディレクトリ内の `tests/` に置く（`lib/tests/` = month・format、`lib/expense/tests/`、`lib/storage/tests/`）。テスト内の import は `../xxx` に付け替えた。バレル（`index.ts`）は作っていない
+- **hooks のテストも `hooks/tests/` に移動**（`useModalState` / `useMonthColorFilters` / `useExpenseFilters`）。`lib/` と `hooks/` は `tests/`、components は従来どおり対象と同じディレクトリに置く
 - `CLAUDE.md` / `.claude/rules/implementation.md` / 本書の構成図のパス表記を更新。過去の作業記録（各リファクタリングの節）の旧パスは当時の記録として残している
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。アプリの挙動は変えていない
 
