@@ -308,7 +308,11 @@
 - 絞り込みボタン `FilterButton` は**画面左下**に固定する丸ボタン（右下の追加ボタンと同じ見た目・ファンネルのアイコン、有効条件数は右上のバッジ）。ヘッダー右にあった月セレクトは廃止し、ボタンを押すと `FilterModal` が開く。モーダルに精算月（`MonthFilter` をモーダル内用に全幅化・`id` 受け取りに変更）とラベル色（`ColorFilter`: 「すべて」＋5色。**色は複数選択可**で、タップで選択／解除を切り替え、選んだ色のいずれかに一致する記録を表示。何も選ばない状態＝「すべて」）を置いた。選択は即時に一覧へ反映され、「解除」で月・色を初期化、「完了」で閉じる
 - 清算状態のタブ（`FilterTabs`）はヘッダーに残した（モーダルに入れるのは月と色のみ）
 - `filterExpenses` に `colors`（空配列＝絞り込みなし）条件を追加（月 → 色 → 清算状態の順）。`useExpenseFilters` に `selectedColors` / `toggleColor` / `clearColors` / `activeFilterCount` / `resetFilters` を追加。フィルタ状態は従来どおり永続化しない
-- `ColorFilter` と `ColorPicker` / `ExpenseItem` で色クラスのCSSが重複している（CSS Modules の制約。色が増えるときは3か所を直す）
+- **リファクタリング（優先度高の3件・同ブランチ）**:
+  - 色クラスの重複を解消: `index.css` に `[data-color="red"]` など5つのルールを置いて `--color-label` に解決し（色を足すときは `index.css` のトークンとこのルールだけを直す）、`ExpenseItem` は `data-color` と `var(--color-label)` で帯を描画
+  - 丸い色ボタンを共通コンポーネント `ColorSwatch` に切り出し、`ColorPicker`（単一選択）と `ColorFilter`（複数選択）から使用。両者は薄い部品になり、選択ロジックだけを持つ（統合はしていない）
+  - `useExpenseFilters` から月・色の状態を `hooks/useMonthColorFilters.ts` に分離。`useExpenseFilters` は清算状態・絞り込み・並べ替えを担当し、月・色フックの戻り値をそのまま展開して返すため `App.tsx` の変更は無し
+  - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件）通過。モバイル幅で一覧の色の帯・追加フォームの色選択・絞り込みモーダルの見た目が変わっていないことを目視確認
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件、`filter.utils.test.ts` 追加）通過。モバイル幅（390×844）のブラウザで、左下ボタン・モーダル・色での絞り込み・バッジ表示を目視確認済み。実機（iOS Safari）は**未実施**
 
 ### 次にやること
