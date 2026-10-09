@@ -1,5 +1,5 @@
-import type { TExpenseInput } from "../types/expense.type"
-import type { TMonthKey } from "../types/month.type"
+import type { TExpenseInput } from "../../types/expense.type"
+import type { TMonthKey } from "../../types/month.type"
 
 const TITLE_REQUIRED_MESSAGE = "項目名を入力してください"
 const AMOUNT_INVALID_MESSAGE = "金額は1円以上の整数で入力してください"

@@ -30,7 +30,10 @@ export function ExpenseItem({
   }
 
   return (
-    <li className={`${styles.item} ${expense.settled ? styles.settled : ""}`}>
+    <li
+      className={`${styles.item} ${expense.settled ? styles.settled : ""}`}
+      data-color={expense.color}
+    >
       <label htmlFor={checkboxId} className={styles.checkboxLabel}>
         <input
           id={checkboxId}

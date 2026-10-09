@@ -6,7 +6,7 @@ import {
   subscribeExpenses,
   toggleSettled,
   updateExpense,
-} from "../lib/expense.store"
+} from "../lib/storage/expense.store"
 
 /**
  * 立て替え記録の一覧と、その追加・更新・清算切り替え・削除を提供するフック。

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { TExpenseInput } from "../../types/expense.type"
 import { FormField } from "../FormField/FormField"
 import { MonthPicker } from "../MonthPicker/MonthPicker"
@@ -9,6 +10,8 @@ interface IExpenseFormProps {
   initialValues?: TExpenseInput
   /** 送信ボタンの文言。例: 「登録する」「保存する」 */
   submitLabel: string
+  /** 金額欄とボタンの間に差し込む追加の入力欄（例: 新規追加のラベル色）。その値は差し込む側が持つ */
+  children?: ReactNode
   /** バリデーションを通過した入力値を受け取る。フォームは送信後に自動では閉じない */
   onSubmit: (input: TExpenseInput) => void
   /** 指定するとキャンセルボタンを表示する（編集用） */
@@ -19,6 +22,7 @@ interface IExpenseFormProps {
 export function ExpenseForm({
   initialValues,
   submitLabel,
+  children,
   onSubmit,
   onCancel,
 }: IExpenseFormProps) {
@@ -48,6 +52,8 @@ export function ExpenseForm({
         placeholder="例: 3000"
         error={errors.amount}
       />
+
+      {children}
 
       <div className={styles.actions}>
         {onCancel && (

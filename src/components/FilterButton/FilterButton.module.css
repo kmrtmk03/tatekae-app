@@ -1,0 +1,52 @@
+/* 左下に固定するボタン。.page（最大幅は --layout-max-width・中央寄せ）の左端に揃える。見た目は追加ボタン（App.module.css の .addButton）に合わせる */
+.button {
+  position: fixed;
+  left: max(16px, calc((100vw - var(--layout-max-width)) / 2 + 16px));
+  bottom: calc(16px + var(--safe-bottom));
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-fab);
+  height: var(--size-fab);
+  border: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.05s ease;
+}
+
+.button:hover {
+  background: var(--color-primary-hover);
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* 有効な絞り込みの数。ボタンの右上に重ねる */
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}

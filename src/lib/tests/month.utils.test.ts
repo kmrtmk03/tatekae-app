@@ -6,8 +6,8 @@ import {
   listMonthKeys,
   parseMonthKey,
   toMonthKey,
-} from "./month.utils"
-import type { IExpense } from "../types/expense.type"
+} from "../month.utils"
+import type { IExpense } from "../../types/expense.type"
 
 describe("isMonthKey", () => {
   it("YYYY-MM（月は 01〜12）だけを月キーとして受け入れる", () => {
@@ -55,7 +55,14 @@ describe("currentMonthKey", () => {
 
 describe("listMonthKeys", () => {
   it("記録が存在する月を重複なく新しい順に返す", () => {
-    const base = { id: "", title: "", amount: 1, settled: false, createdAt: "" }
+    const base = {
+      id: "",
+      title: "",
+      amount: 1,
+      settled: false,
+      color: "blue",
+      createdAt: "",
+    } as const
     const expenses: IExpense[] = [
       { ...base, month: "2026-09" },
       { ...base, month: "2026-10" },

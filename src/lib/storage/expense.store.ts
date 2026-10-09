@@ -6,7 +6,11 @@
  * コンポーネントはこのストアを直接触らず、hooks/useExpenses.ts 経由で使うこと。
  */
 
-import type { IExpense, TExpenseInput } from "../types/expense.type"
+import type {
+  IExpense,
+  TExpenseInput,
+  TNewExpenseInput,
+} from "../../types/expense.type"
 import { loadExpenses, saveExpenses } from "./storage.utils"
 
 /** localStorage への保存に失敗したときに画面へ出すメッセージ */
@@ -55,13 +59,14 @@ function commit(nextExpenses: IExpense[]): void {
 }
 
 /** 新しい記録を追加する。id と作成日時はここで採番し、清算状態は未清算で始める */
-export function addExpense(input: TExpenseInput): void {
+export function addExpense(input: TNewExpenseInput): void {
   const expense: IExpense = {
     id: crypto.randomUUID(),
     month: input.month,
     title: input.title,
     amount: input.amount,
     settled: false,
+    color: input.color,
     createdAt: new Date().toISOString(),
   }
   commit([...state.expenses, expense])
@@ -69,7 +74,7 @@ export function addExpense(input: TExpenseInput): void {
 
 /**
  * 指定 id の記録の入力項目（精算月・項目名・金額）を更新する。該当 id がなければ何もしない。
- * id・createdAt はここでは書き換えさせない。清算状態の変更は toggleSettled を使う
+ * id・color・createdAt はここでは書き換えさせない。清算状態の変更は toggleSettled を使う
  */
 export function updateExpense(id: string, patch: TExpenseInput): void {
   commit(

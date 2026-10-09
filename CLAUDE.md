@@ -19,7 +19,7 @@
 
 - コンポーネントは `components/<Name>/` に tsx と `module.css` を同居させる（バレルは作らない）
 - 型名は `IXxx` / `TXxx`、ファイル接尾辞は `*.type.ts` / `*.utils.ts`
-- ロジックは hooks と `lib/*.utils.ts` の純粋関数へ。localStorage に依存する処理は `lib/storage.utils.ts` のみ
+- ロジックは hooks と `lib/*.utils.ts` の純粋関数へ。localStorage に依存する処理は `lib/storage/storage.utils.ts` のみ
 - 外部データは `unknown` + 型ガードで検証する（`as` で済ませない）
 - `SummaryBar` には絞り込み前の全件を渡す（月・清算状態フィルタの影響を受けない）
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseExpenseInput } from "./validation.utils"
+import { parseExpenseInput } from "../validation.utils"
 
 const VALID = { month: "2026-10", title: "飲み会代", amount: "3000" } as const
 
