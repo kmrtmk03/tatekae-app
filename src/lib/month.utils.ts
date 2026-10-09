@@ -32,6 +32,24 @@ export function getMonthKey(date: string): TMonthKey | null {
   return isMonthKey(monthKey) ? monthKey : null
 }
 
+/** 月キーを分解した値。month は 1〜12 */
+export interface IMonthParts {
+  year: number
+  month: number
+}
+
+/** 月キー 'YYYY-MM' を年・月に分解する。月キーであることは型で保証されているため検証しない */
+export function parseMonthKey(monthKey: TMonthKey): IMonthParts {
+  const [year, month] = monthKey.split("-").map(Number)
+  return { year, month }
+}
+
+/** 年（4 桁）と月（1〜12）から月キーを組み立てる。範囲外で月キーにならない場合は null */
+export function toMonthKey(year: number, month: number): TMonthKey | null {
+  const monthKey = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`
+  return isMonthKey(monthKey) ? monthKey : null
+}
+
 /** 今月の月キーを 'YYYY-MM' で返す（タイムゾーンのずれを避けるためローカル日時で組み立てる） */
 export function currentMonthKey(): TMonthKey {
   const now = new Date()

@@ -4,6 +4,7 @@ import { currentMonthKey } from "../../../lib/month.utils"
 import { parseExpenseInput } from "../../../lib/validation.utils"
 import type { IExpenseFormErrors } from "../../../lib/validation.utils"
 import type { TExpenseInput } from "../../../types/expense.type"
+import type { TMonthKey } from "../../../types/month.type"
 
 interface IUseExpenseFormParams {
   /** 初期値。未指定なら精算月は今月、項目名・金額は空（新規追加用） */
@@ -24,7 +25,7 @@ export function useExpenseForm({
   initialValues,
   onSubmit,
 }: IUseExpenseFormParams) {
-  const [month, setMonth] = useState<string>(
+  const [month, setMonth] = useState<TMonthKey>(
     initialValues?.month ?? currentMonthKey(),
   )
   const [title, setTitle] = useState(initialValues?.title ?? "")

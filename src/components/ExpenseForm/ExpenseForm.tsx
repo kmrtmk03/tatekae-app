@@ -1,5 +1,6 @@
 import type { TExpenseInput } from "../../types/expense.type"
 import { FormField } from "../FormField/FormField"
+import { MonthPicker } from "../MonthPicker/MonthPicker"
 import styles from "./ExpenseForm.module.css"
 import { useExpenseForm } from "./hooks/useExpenseForm"
 
@@ -36,11 +37,10 @@ export function ExpenseForm({
         error={errors.title}
       />
 
-      <FormField
+      <MonthPicker
         label="精算月"
-        type="month"
         value={values.month}
-        onChange={(e) => setMonth(e.target.value)}
+        onChange={setMonth}
         error={errors.month}
       />
 
