@@ -49,7 +49,7 @@
 ### Phase 1 完了内容
 - `src/types/expense.ts`: `Expense` 型を定義（計画の3.1節どおり）
 - `src/lib/storage.ts`: `loadExpenses` / `saveExpenses` を実装
-  - `localStorage` キーは `tatekae-app/expenses/v1`、`{ version, expenses }` の形で保存
+  - `localStorage` キーは `tatekae-app/expenses/v1`（現在は v2。上記「日付から精算月への変更」参照）、`{ version, expenses }` の形で保存
   - JSON パース失敗・`expenses` が配列でない・要素の形が不正な場合は空配列にフォールバック（型ガード `isExpense` で要素単位に検証）
   - `saveExpenses` は例外を握りつぶさず呼び出し元（`useExpenses`）に伝播させる設計
 - `src/lib/summary.ts`: `sumUnsettled` / `sumAll` を副作用なしの純粋関数として実装
@@ -258,7 +258,7 @@
   - **注意（残る制約）**: 形式が不正で `loadExpenses` が除外した要素は、起動しただけでは消えなくなったが、**最初に記録を変更（追加・編集・清算・削除）した時点で localStorage からは消える**。不正要素を保持し続ける設計にはしていない
   - 別タブ間の同期（`storage` イベント）は未対応。複数タブで開いたまま操作すると、後から保存したタブの内容で上書きされる
 - **C**: `index.css` に `--color-on-primary` / `--color-overlay` / `--focus-ring` / `--size-control-sm|md|lg` / `--size-fab` を追加し、各 module.css の直書き（`#ffffff` / `rgba(...)` / フォーカスリング / 高さ 36・44・48・56px）を置き換え。`Modal.module.css` の不要な `calc(16px)` を整理。見た目の変更なし。**余白（`--space-*`）のトークン化は、全ファイルに波及し効果が薄いため見送り**
-- **D（未実施）**: Vitest の導入（`lib/*.utils.ts` のみ）と `Modal` のアクセシビリティ改善（背景スクロール禁止・フォーカストラップ・フォーカスの復帰）は、依存追加・機能改善にあたるため今回は対象外
+- **D（一部実施）**: Vitest の導入は「日付から精算月への変更」で実施済み。`Modal` のアクセシビリティ改善（背景スクロール禁止・フォーカストラップ・フォーカスの復帰）は未実施。当時の記述: Vitest の導入（`lib/*.utils.ts` のみ）と `Modal` のアクセシビリティ改善（背景スクロール禁止・フォーカストラップ・フォーカスの復帰）は、依存追加・機能改善にあたるため今回は対象外
 - **検証結果**:
   - 各コミットで `pnpm exec tsc -b` / `pnpm run lint` / `pnpm run format:check` 成功（lint は最終的に警告 0 件）。最後に `pnpm run build` 成功
   - `parseExpenseInput` を Node（`--experimental-strip-types`）で直接実行して確認: `1.5` / `1e3` / `0` / `-5` / 空 / 桁あふれの金額、空の日付、`2026-02-30`、空白のみの項目名は失敗、`2024-02-29` と ` 飲み会 `（前後の空白は除去）は成功
@@ -270,18 +270,20 @@
 ### 日付から精算月への変更（ユーザー指示・ブランチ `feat/expense-month-only`・2026-10-09）
 入力を日単位から月単位に変え、「立替精算する月」の意味にした。
 - **データモデル（仕様変更）**: `IExpense.date`（`'YYYY-MM-DD'`）を `month`（`TMonthKey`、`'YYYY-MM'`）に置き換え。`TExpenseInput` も `month` に変更。
-- **旧データの移行**: `storage.utils.ts` の `parseExpense` が、`month` が無く `date` で保存された旧データの先頭 7 文字を精算月として読み込む（保存キー・version は据え置き）。月が妥当でない要素は従来どおり除外。最初に記録を変更した時点で新形式（`month`）で保存し直される。**旧データは日の情報が失われる**（保存し直した後は戻せない）。
+- **旧データの移行**: 保存先を `tatekae-app/expenses/v2`（`version: 2`、`month` で保存）に分離。`loadExpenses` は v2 があればそれを読み、無いときだけ旧 v1 キーの `date` を（`YYYY-MM-DD` 全体の形式を満たすものに限り）精算月へ変換して読み込む。**v1 は読み込み専用で書き換え・削除しない**ため、旧ビルドを開いても記録は残る（v2 を書いた後は旧ビルド側の変更と同期しない）。v2 が一度保存されたら以後 v1 は読まれない。**旧データは日の情報が失われ**、同じ月の中の並び順は日付順から作成日時順に変わる。
 - **フォーム**: 「日付」を「精算月」（初期値は今月）に変更。入力は当初 `<input type="month">` だったが、アプリの見た目に合わせるためライブラリを使わず自作の `components/MonthPicker/`（年の前後ボタン + 12 か月のグリッド。選択中の月のボタンを押すと同じ位置に展開し、月を選ぶと閉じる。一覧を開いている間の Escape は一覧のみ閉じてモーダルは閉じない）に置き換えた。`month.utils.ts` に `parseMonthKey` / `toMonthKey` を追加し、`useExpenseForm` の `month` は `TMonthKey` で保持。選べる年は 2000〜2100。検証は `parseExpenseInput` が `isMonthKey` で行い、エラー文言は「精算月を入力してください」。`isMonthKey` は月を 01〜12 に厳密化。
 - **表示・並び・絞り込み**: 一覧は「2026年10月」形式で表示。並び順は精算月の降順、同月は `createdAt` の降順。月フィルタは `expense.month` で絞り込む。
 - **削除**: `lib/date.utils.ts`（`todayISO` / `parseISODate`）と `formatDate` を削除（`currentMonthKey` は `month.utils.ts` へ）。
 - **検証結果**: `pnpm exec tsc -b` / `pnpm run lint`（警告 0）/ `pnpm run format:check` / `pnpm run build` 成功。アプリ内ブラウザで、旧形式（`date`）と不正要素を混ぜたデータを投入し、旧データが「2026年9月」で表示され不正要素が除外されること、追加フォームが「精算月」の月入力で初期値が今月（2026-10）であることを確認（確認後 localStorage は元へ戻した）。
+- **レビュー指摘の修正**（コミット単位）: ①保存先の v2 分離（上記）と、型ガード以外の `as` を `isRecord` に置き換え ②`currentMonthKey` の `as` を除き `toMonthKey` を再利用 ③月ピッカー化で到達しなくなった精算月の検証・エラー表示を削除（`IExpenseFormValues.month` は `TMonthKey`） ④ラベル・エラー表示の外枠を `components/FormFieldLayout/` に切り出し、`FormField` と `MonthPicker` で共用 ⑤`MonthPicker` を閉じたときのフォーカス復帰、外側のタップ・他要素へのフォーカス移動で閉じる、`aria-controls` は開いている間だけ付与、表示年は選択年からの差分で持つ ⑥Vitest を導入（`pnpm test`）し、`month.utils` / `validation.utils` / `storage.utils`（v1→v2 移行を含む）のテスト 21 件を追加
 - **月ピッカーの検証**: 390×844 のアプリ内ブラウザ（ダークモード）で、一覧の展開表示・年の切り替え・月の選択・Escape（一覧のみ閉じる）・登録して `localStorage` に `month: "2027-03"` で保存されることを確認（確認後に localStorage は戻した）。`pnpm exec tsc -b` / lint / format:check / build 成功。
-- **未検証**: 実機（iOS Safari）での表示、ライトモードでの目視、編集モーダルでの月ピッカーの操作、キーボード（Tab / Enter）操作。
+- **修正後の追加検証**: `pnpm test` 21 件成功、tsc / lint / format:check / build 成功。アプリ内ブラウザ（390×844）で、月の選択・Escape でトリガーへフォーカスが戻りモーダルは残ること、外側の `pointerdown` で閉じること、`aria-controls` が閉じている間は付かないこと、年の切り替えを確認。v1→v2 の移行はブラウザ上では結果を取得できず、Vitest のテストでのみ確認。
+- **未検証**: 実機（iOS Safari）での表示、ライトモードでの目視、編集モーダルでの月ピッカーの操作、実キーボードでの Tab / Enter 操作、ブラウザ上での v1→v2 移行。
 
 ### 次にやること
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
-- 必要なら D（Vitest 導入・`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
+- 必要なら D（`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
 ---
