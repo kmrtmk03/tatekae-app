@@ -31,6 +31,7 @@
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
 | 日付→精算月への変更 | 🔧 レビュー待ち | ブランチ `feat/expense-month-only`。入力を日単位から月単位（立替精算する月）へ変更。下記「日付から精算月への変更」参照 |
+| Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 
 ### 当初計画からの変更点
@@ -280,7 +281,15 @@
 - **修正後の追加検証**: `pnpm test` 21 件成功、tsc / lint / format:check / build 成功。アプリ内ブラウザ（390×844）で、月の選択・Escape でトリガーへフォーカスが戻りモーダルは残ること、外側の `pointerdown` で閉じること、`aria-controls` が閉じている間は付かないこと、年の切り替えを確認。v1→v2 の移行はブラウザ上では結果を取得できず、Vitest のテストでのみ確認。
 - **未検証**: 実機（iOS Safari）での表示、ライトモードでの目視、編集モーダルでの月ピッカーの操作、実キーボードでの Tab / Enter 操作、ブラウザ上での v1→v2 移行。
 
+### Vercel の自動ビルドを release ブランチのみにする設定（ユーザー指示・2026-10-09）
+- ルートに `vercel.json` を追加し、`ignoreCommand` で `$VERCEL_GIT_COMMIT_REF` が `release` 以外のときはビルドをスキップするようにした（コマンドが終了コード 0 ならスキップ、1 ならビルド）。以降の作業ブランチは `develop` から切る方針
+- 計画書から削除済みの Phase 7（デプロイ）の再開ではなく、ビルド対象ブランチの制限のみ
+- **注意**: `vercel.json` はプッシュされたブランチ側のファイルが読まれるため、このファイルを含まない古いブランチではスキップされない。全ブランチに確実に効かせるには、Vercel ダッシュボードの Settings → Git → Ignored Build Step に同じコマンドを設定する
+- **注意**: Production Branch（本番にするブランチ）は `vercel.json` では指定できない。`release` を本番にする場合は、ダッシュボードの Settings → Git → Production Branch で設定する
+- **未検証・未実施**: Vercel 上での実際のスキップ／ビルドの挙動（`vercel.json` を含むブランチのプッシュ時）は確認していない。ダッシュボード側の設定（Production Branch など）も未実施。ローカルでは JSON の構文と `ignoreCommand` のシェル式（`release` で終了コード 1、それ以外で 0）のみ確認した
+
 ### 次にやること
+- Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
 - 必要なら D（`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
