@@ -1,5 +1,6 @@
-import { useState } from "react"
-import { filterExpenses } from "../lib/filter.utils"
+import { useCallback, useState } from "react"
+import { filterExpenses, matchesFilter } from "../lib/filter.utils"
+import type { TFilterableExpense } from "../lib/filter.utils"
 import { sortExpensesNewestFirst } from "../lib/sort.utils"
 import type { IExpense, TExpenseFilter } from "../types/expense.type"
 import { useMonthColorFilters } from "./useMonthColorFilters"
@@ -21,8 +22,16 @@ const EMPTY_MESSAGE_NO_MATCH = "該当する記録がありません"
  */
 export function useExpenseFilters(expenses: IExpense[]) {
   const [statusFilter, setStatusFilter] = useState<TExpenseFilter>("all")
-  const monthColorFilters = useMonthColorFilters(expenses)
-  const { activeMonth, selectedColors } = monthColorFilters
+  const {
+    monthKeys,
+    activeMonth,
+    setSelectedMonth,
+    selectedColors,
+    toggleColor,
+    clearColors,
+    activeFilterCount,
+    resetFilters: resetMonthColorFilters,
+  } = useMonthColorFilters(expenses)
 
   // 絞り込んだあとに新しい順へ並べる（一覧の並び順はここで決まる）
   const filteredExpenses = sortExpensesNewestFirst(
@@ -31,6 +40,24 @@ export function useExpenseFilters(expenses: IExpense[]) {
       colors: selectedColors,
       status: statusFilter,
     }),
+  )
+
+  /**
+   * 追加した記録が今の絞り込み条件に合わないときだけ、絞り込みを全て解除して一覧に出す。
+   * 呼び忘れると、登録しても一覧に現れず保存失敗と区別がつかない。追加の直後に、追加した記録の項目を渡して呼ぶこと。
+   * 追加直後の記録は未清算なので、清算状態は "settled" のときだけ合わなくなる。
+   */
+  const revealNewExpense = useCallback(
+    (added: Pick<TFilterableExpense, "month" | "color">) => {
+      const isVisible = matchesFilter(
+        { ...added, settled: false },
+        { month: activeMonth, colors: selectedColors, status: statusFilter },
+      )
+      if (isVisible) return
+      resetMonthColorFilters()
+      setStatusFilter("all")
+    },
+    [activeMonth, selectedColors, statusFilter, resetMonthColorFilters],
   )
 
   const emptyMessage =
@@ -43,7 +70,18 @@ export function useExpenseFilters(expenses: IExpense[]) {
     // 清算状態フィルタ
     statusFilter,
     setStatusFilter,
-    // 月・色フィルタ（絞り込みモーダル用。内訳は useMonthColorFilters を参照）
-    ...monthColorFilters,
+    // 月フィルタ（monthKeys は選択肢、activeMonth は現在の選択）
+    monthKeys,
+    activeMonth,
+    setSelectedMonth,
+    // ラベル色フィルタ（複数選択。空なら絞り込みなし）
+    selectedColors,
+    toggleColor,
+    clearColors,
+    // 月・色フィルタの有効数（バッジ用）と解除
+    activeFilterCount,
+    resetFilters: resetMonthColorFilters,
+    // 追加した記録が絞り込みで隠れないようにする
+    revealNewExpense,
   }
 }

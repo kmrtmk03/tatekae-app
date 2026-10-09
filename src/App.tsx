@@ -9,6 +9,7 @@ import { SummaryBar } from "./components/SummaryBar/SummaryBar"
 import { useExpenseFilters } from "./hooks/useExpenseFilters"
 import { useExpenses } from "./hooks/useExpenses"
 import { useModalState } from "./hooks/useModalState"
+import type { TNewExpenseInput } from "./types/expense.type"
 
 function App() {
   const {
@@ -32,7 +33,14 @@ function App() {
     clearColors,
     activeFilterCount,
     resetFilters,
+    revealNewExpense,
   } = useExpenseFilters(expenses)
+
+  /** 記録を追加し、今の絞り込みで隠れる場合は絞り込みを解除して一覧に出す */
+  function handleAddExpense(input: TNewExpenseInput) {
+    addExpense(input)
+    revealNewExpense(input)
+  }
 
   const {
     modal,
@@ -79,7 +87,7 @@ function App() {
       </button>
 
       {modal.type === "add" && (
-        <AddExpenseModal onSubmit={addExpense} onClose={closeModal} />
+        <AddExpenseModal onSubmit={handleAddExpense} onClose={closeModal} />
       )}
 
       {modal.type === "filter" && (

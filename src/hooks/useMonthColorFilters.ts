@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { countActiveFilters, toggleColorSelection } from "../lib/filter.utils"
 import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
 import type { IExpense, TExpenseColor } from "../types/expense.type"
 import type { TMonthFilter } from "../types/month.type"
@@ -26,14 +27,11 @@ export function useMonthColorFilters(expenses: IExpense[]) {
       : ALL_MONTHS
 
   // 絞り込みが有効な条件（月・色）の数。絞り込みボタンのバッジに使う
-  const activeFilterCount =
-    (activeMonth !== ALL_MONTHS ? 1 : 0) + (selectedColors.length > 0 ? 1 : 0)
+  const activeFilterCount = countActiveFilters(activeMonth, selectedColors)
 
   /** 指定した色の選択を切り替える（選択中なら外し、未選択なら加える） */
   const toggleColor = useCallback((color: TExpenseColor) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
-    )
+    setSelectedColors((prev) => toggleColorSelection(prev, color))
   }, [])
 
   /** 色の絞り込みを解除して「すべての色」に戻す */

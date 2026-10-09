@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { filterExpenses } from "./filter.utils"
+import {
+  countActiveFilters,
+  filterExpenses,
+  matchesFilter,
+  toggleColorSelection,
+} from "./filter.utils"
+import type { IExpenseFilterCondition } from "./filter.utils"
 import type { IExpense } from "../types/expense.type"
 
 const BASE = { title: "", amount: 1, createdAt: "" }
@@ -67,5 +73,42 @@ describe("filterExpenses", () => {
         }),
       ),
     ).toEqual([])
+  })
+})
+
+describe("matchesFilter", () => {
+  const added = { month: "2026-10", color: "blue", settled: false } as const
+
+  it("月・色・清算状態のすべてに合うときだけ true", () => {
+    const all: IExpenseFilterCondition = {
+      month: "all",
+      colors: [],
+      status: "all",
+    }
+    expect(matchesFilter(added, all)).toBe(true)
+    expect(matchesFilter(added, { ...all, month: "2026-09" })).toBe(false)
+    expect(matchesFilter(added, { ...all, colors: ["red"] })).toBe(false)
+    expect(matchesFilter(added, { ...all, colors: ["red", "blue"] })).toBe(true)
+    expect(matchesFilter(added, { ...all, status: "settled" })).toBe(false)
+    expect(matchesFilter(added, { ...all, status: "unsettled" })).toBe(true)
+  })
+})
+
+describe("toggleColorSelection", () => {
+  it("未選択なら加え、選択中なら外す（元の配列は変えない）", () => {
+    const original = ["red"] as const
+    expect(toggleColorSelection([...original], "blue")).toEqual(["red", "blue"])
+    expect(toggleColorSelection(["red", "blue"], "red")).toEqual(["blue"])
+    expect(toggleColorSelection(["red"], "red")).toEqual([])
+    expect(original).toEqual(["red"])
+  })
+})
+
+describe("countActiveFilters", () => {
+  it("月と色のうち有効なものの数を返し、色は何色選んでも 1 と数える", () => {
+    expect(countActiveFilters("all", [])).toBe(0)
+    expect(countActiveFilters("2026-10", [])).toBe(1)
+    expect(countActiveFilters("all", ["red", "blue"])).toBe(1)
+    expect(countActiveFilters("2026-10", ["red", "blue"])).toBe(2)
   })
 })
