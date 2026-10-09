@@ -293,7 +293,7 @@
 ### ヘッダーのタイトルと総額表示の削除（ユーザー指示・2026-10-09）
 - `src/App.tsx` のヘッダーから `<h1>立て替え管理</h1>` を削除し、`App.module.css` の `.title` を削除
 - 上余白の解消: `SummaryBar`（左）と `MonthFilter`（右）を同じ行（`.titleRow` を `.summaryRow` に改名、`align-items: flex-start` / `justify-content: space-between`）に並べ、「未清算合計」ラベルの上端を月セレクトに揃えた。`SummaryBar.module.css` の `.bar` の上 padding を 0 に変更。モバイル幅（390×844）で目視確認済み
-- `SummaryBar` の補助情報から「総額（清算済み含む）」を削除し、「未清算 n件」のみ表示。未使用になった `sumAll`（`lib/summary.utils.ts`）は残している（削除するかは未判断）
+- `SummaryBar` の補助情報から「総額（清算済み含む）」を削除し、「未清算 n件」のみ表示。未使用になった `sumAll`（`lib/summary.utils.ts`）は、リファクタリング（優先度中）で削除済み
 - 実機（iOS Safari）での確認は未実施。`tsc -b` / `lint` / `format:check` / `pnpm test`（21件）は通過、`pnpm run build` も成功
 - 注意: `index.html` の `<title>` とアプリ内の h1 見出しが無くなったため、見出し構造（アクセシビリティ）は未対応
 
@@ -314,6 +314,12 @@
   - `useExpenseFilters` から月・色の状態を `hooks/useMonthColorFilters.ts` に分離。`useExpenseFilters` は清算状態・絞り込み・並べ替えを担当し、月・色フックの戻り値をそのまま展開して返すため `App.tsx` の変更は無し
   - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件）通過。モバイル幅で一覧の色の帯・追加フォームの色選択・絞り込みモーダルの見た目が変わっていないことを目視確認
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件、`filter.utils.test.ts` 追加）通過。モバイル幅（390×844）のブラウザで、左下ボタン・モーダル・色での絞り込み・バッジ表示を目視確認済み。実機（iOS Safari）は**未実施**
+
+- **リファクタリング（優先度中の3件・同ブランチ）**:
+  - `App.tsx` のモーダル開閉（`TModalState`・編集対象の引き当て・open/close）を `hooks/useModalState.ts` に分離。`App` は配線のみになった（138行→109行）
+  - 未使用の `sumAll` を削除
+  - `ExpenseForm` の `isColorSelectable` フラグを廃止し、`children`（金額欄とボタンの間に差し込む追加入力欄）に変更。ラベル色の state と `ColorPicker` は `AddExpenseModal` が持つため、`useExpenseForm` / `ExpenseForm` の `onSubmit` は色を知らなくなった。`EditExpenseModal` は変更なし
+  - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件）通過。ブラウザで色（紫）を選んで追加し、その色で保存されることを確認（見た目の目視は前回から変更なし。モーダルの開閉は未再確認）
 
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
