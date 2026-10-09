@@ -30,6 +30,7 @@
 | Phase 5: スタイリングと UX | ✅ 完了 | ユーザー指示によりPhase 4より先に実施。アニメーション/Undoトースト（任意項目）は未実施 |
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
+| 日付→精算月への変更 | 🔧 レビュー待ち | ブランチ `feat/expense-month-only`。入力を日単位から月単位（立替精算する月）へ変更。下記「日付から精算月への変更」参照 |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 
 ### 当初計画からの変更点
@@ -209,7 +210,7 @@
 - `src/App.tsx`: `selectedMonth` を `useState` で管理。月 → 清算状態の順で絞り込み（`FilterTabs` と併用可）。選択中の月の記録が削除・編集で無くなった場合は、`activeMonth` を派生値として計算し「すべての月」に戻す（`useEffect` で state を書き換えない）
 - `SummaryBar` には従来どおり絞り込み前の**全件**を渡し、未清算合計・総額は月フィルタの影響を受けない（F-04「未清算合計を常に確認できる」を優先。月ごとの合計を出す場合は別途検討）
 - 配置: タイトル行の右側に置き、ヘッダーの高さを増やさない（`App.module.css` に `.titleRow` を追加）
-- 日付の形式が不正な記録は月の選択肢に出ず、「すべての月」でのみ表示される
+- （過去の記述。現在は精算月が必須の形式で、不正な要素は読み込み時に除外される）日付の形式が不正な記録は月の選択肢に出ず、「すべての月」でのみ表示される
 - **検証結果**:
   - `pnpm run build` / `pnpm run lint` 成功（既知の `set-state-in-effect` 警告のみ）
   - `pnpm run dev` + アプリ内ブラウザ（390×844）で、4件（2026年10月×2、2026年9月×1、2025年12月×1）を投入して確認
@@ -266,7 +267,18 @@
 - **気付いた点（未対応）**: `ExpenseItem` のチェックボックスにはアクセシブルな名前（ラベル文言・`aria-label`）が無い
 - **注意**: 本書の過去の完了内容に出てくる `useExpenses` の `useEffect` による保存、`validateExpenseInput`、`ExpenseList` 内の並べ替えなどの記述は、現在は上記のとおり変わっている
 
+### 日付から精算月への変更（ユーザー指示・ブランチ `feat/expense-month-only`・2026-10-09）
+入力を日単位から月単位に変え、「立替精算する月」の意味にした。
+- **データモデル（仕様変更）**: `IExpense.date`（`'YYYY-MM-DD'`）を `month`（`TMonthKey`、`'YYYY-MM'`）に置き換え。`TExpenseInput` も `month` に変更。
+- **旧データの移行**: `storage.utils.ts` の `parseExpense` が、`month` が無く `date` で保存された旧データの先頭 7 文字を精算月として読み込む（保存キー・version は据え置き）。月が妥当でない要素は従来どおり除外。最初に記録を変更した時点で新形式（`month`）で保存し直される。**旧データは日の情報が失われる**（保存し直した後は戻せない）。
+- **フォーム**: 「日付」を「精算月」（`<input type="month">`、初期値は今月）に変更。検証は `parseExpenseInput` が `isMonthKey` で行い、エラー文言は「精算月を入力してください」。`isMonthKey` は月を 01〜12 に厳密化。
+- **表示・並び・絞り込み**: 一覧は「2026年10月」形式で表示。並び順は精算月の降順、同月は `createdAt` の降順。月フィルタは `expense.month` で絞り込む。
+- **削除**: `lib/date.utils.ts`（`todayISO` / `parseISODate`）と `formatDate` を削除（`currentMonthKey` は `month.utils.ts` へ）。
+- **検証結果**: `pnpm exec tsc -b` / `pnpm run lint`（警告 0）/ `pnpm run format:check` / `pnpm run build` 成功。アプリ内ブラウザで、旧形式（`date`）と不正要素を混ぜたデータを投入し、旧データが「2026年9月」で表示され不正要素が除外されること、追加フォームが「精算月」の月入力で初期値が今月（2026-10）であることを確認（確認後 localStorage は元へ戻した）。
+- **未検証**: 実機（iOS Safari）での月入力の見た目。PC の Safari は `type="month"` 非対応でテキスト入力になるため、`YYYY-MM` 形式で入力しないとエラーになる。追加・保存・編集の一連操作と、月入力のレイアウト（390px）の目視確認は未実施。
+
 ### 次にやること
+- 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
 - 必要なら D（Vitest 導入・`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
@@ -313,8 +325,8 @@
 export type Expense = {
   /** 一意のID。crypto.randomUUID() で生成 */
   id: string;
-  /** 立て替えた日付。'YYYY-MM-DD' 形式（input[type="date"] と同じ） */
-  date: string;
+  /** 立替精算する月。'YYYY-MM' 形式（input[type="month"] と同じ）。旧: 立て替えた日付 date */
+  month: string;
   /** 項目名。例: 「飲み会代」「新幹線チケット」 */
   title: string;
   /** 金額（円）。整数の正の数のみ */

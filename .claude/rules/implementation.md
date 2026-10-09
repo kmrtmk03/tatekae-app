@@ -51,7 +51,7 @@ src/
 ## 仕様上の不変条件（変更するときは要確認）
 
 - **`SummaryBar` には絞り込み前の全件（`expenses`）を渡す**。月・清算状態フィルタの影響を受けない（F-04「未清算合計を常に確認できる」を優先）
-- 一覧の並び順は日付の降順、同日なら `createdAt` の降順（`useExpenseFilters` が `lib/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
+- 一覧の並び順は精算月の降順、同月なら `createdAt` の降順（`useExpenseFilters` が `lib/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
 - 追加・編集は、保存成功時にモーダルが自動で閉じる。キャンセル・×・Escape・オーバーレイのクリックは変更を破棄して閉じる
 - フィルタの選択状態（月・清算状態）は永続化しない（リロードで初期値に戻る）
 
