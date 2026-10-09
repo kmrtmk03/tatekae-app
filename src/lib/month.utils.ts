@@ -23,15 +23,6 @@ export function isMonthFilter(value: string): value is TMonthFilter {
   return value === ALL_MONTHS || isMonthKey(value)
 }
 
-/**
- * 'YYYY-MM-DD' の日付文字列から月キー 'YYYY-MM' を取り出す。形式が不正な場合は null。
- * 記録が日付（'YYYY-MM-DD'）で保存されていた旧データを、精算月へ変換するために使う。
- */
-export function getMonthKey(date: string): TMonthKey | null {
-  const monthKey = date.slice(0, 7)
-  return isMonthKey(monthKey) ? monthKey : null
-}
-
 /** 月キーを分解した値。month は 1〜12 */
 export interface IMonthParts {
   year: number
