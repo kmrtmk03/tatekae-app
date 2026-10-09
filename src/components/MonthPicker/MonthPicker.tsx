@@ -1,5 +1,5 @@
-import { useId, useState } from "react"
-import type { KeyboardEvent } from "react"
+import { useEffect, useId, useRef, useState } from "react"
+import type { FocusEvent, KeyboardEvent } from "react"
 import { formatMonth } from "../../lib/format.utils"
 import { parseMonthKey, toMonthKey } from "../../lib/month.utils"
 import type { TMonthKey } from "../../types/month.type"
@@ -28,17 +28,41 @@ interface IMonthPickerProps {
  * - 閉じている間は選択中の月（例: 2026年10月）をボタンで表示し、押すと下に年の切り替えと 12 か月の一覧が開く
  * - 一覧は同じ位置に展開する（ポップアップにしない）ため、モーダルの中でも重ならない
  * - 一覧を開いている間の Escape は一覧だけを閉じ、親のモーダルは閉じない
+ * - 月の選択・Escape で閉じたときは、キーボード操作が途切れないようボタンへフォーカスを戻す
+ * - 一覧の外側のタップ・他の入力欄へのフォーカス移動でも閉じる
  */
 export function MonthPicker({ label, value, onChange }: IMonthPickerProps) {
   const triggerId = useId()
   const listId = useId()
+  const pickerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const selected = parseMonthKey(value)
   const [isOpen, setIsOpen] = useState(false)
-  // 一覧に表示中の年。開くたびに選択中の年へ戻す
-  const [viewYear, setViewYear] = useState(selected.year)
+  // 一覧に表示中の年を、選択中の年からの差分で持つ（開くたびに 0 へ戻す）。
+  // 年そのものを state にすると value との二重管理になるため、表示年は派生値にしている
+  const [yearOffset, setYearOffset] = useState(0)
+  const viewYear = selected.year + yearOffset
+
+  // 一覧の外側をタップしたら閉じる。リスナーは同じ effect 内で必ず解除する
+  useEffect(() => {
+    if (!isOpen) return
+    function handlePointerDown(e: PointerEvent) {
+      if (e.target instanceof Node && !pickerRef.current?.contains(e.target)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("pointerdown", handlePointerDown)
+    return () => document.removeEventListener("pointerdown", handlePointerDown)
+  }, [isOpen])
+
+  /** 一覧を閉じてトリガーのボタンへフォーカスを戻す（閉じると一覧内のフォーカス中の要素が消えるため） */
+  function closeAndFocusTrigger() {
+    setIsOpen(false)
+    triggerRef.current?.focus()
+  }
 
   function handleToggle() {
-    if (!isOpen) setViewYear(selected.year)
+    if (!isOpen) setYearOffset(0)
     setIsOpen((prev) => !prev)
   }
 
@@ -46,26 +70,47 @@ export function MonthPicker({ label, value, onChange }: IMonthPickerProps) {
     const monthKey = toMonthKey(viewYear, month)
     if (monthKey === null) return
     onChange(monthKey)
-    setIsOpen(false)
+    closeAndFocusTrigger()
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     if (e.key !== "Escape" || !isOpen) return
     // 親のモーダルの Escape 処理（document のリスナー）に届かないようにする
     e.stopPropagation()
-    setIsOpen(false)
+    closeAndFocusTrigger()
+  }
+
+  /**
+   * フォーカスがピッカーの外の要素へ移ったら閉じる（Tab での移動など）。
+   * relatedTarget が無い場合（Safari はボタンのタップでフォーカスが移らない）は閉じない。
+   * 外側のタップは handlePointerDown が扱う。
+   */
+  function handleBlur(e: FocusEvent<HTMLDivElement>) {
+    if (
+      e.relatedTarget instanceof Node &&
+      !e.currentTarget.contains(e.relatedTarget)
+    ) {
+      setIsOpen(false)
+    }
   }
 
   return (
     <FormFieldLayout label={label} htmlFor={triggerId}>
-      <div className={styles.picker} onKeyDown={handleKeyDown}>
+      <div
+        ref={pickerRef}
+        className={styles.picker}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+      >
         <button
+          ref={triggerRef}
           id={triggerId}
           type="button"
           className={styles.trigger}
           onClick={handleToggle}
           aria-expanded={isOpen}
-          aria-controls={listId}
+          // 一覧は開いている間だけ DOM に存在するため、その間だけ紐付ける
+          aria-controls={isOpen ? listId : undefined}
           // ラベルに紐付けるだけだと選択中の月が読み上げられないため、値も含めた名前を付ける
           aria-label={`${label}: ${formatMonth(value)}`}
         >
@@ -81,7 +126,7 @@ export function MonthPicker({ label, value, onChange }: IMonthPickerProps) {
               <button
                 type="button"
                 className={styles.yearButton}
-                onClick={() => setViewYear((prev) => prev - 1)}
+                onClick={() => setYearOffset((prev) => prev - 1)}
                 disabled={viewYear <= MIN_YEAR}
                 aria-label="前の年"
               >
@@ -91,7 +136,7 @@ export function MonthPicker({ label, value, onChange }: IMonthPickerProps) {
               <button
                 type="button"
                 className={styles.yearButton}
-                onClick={() => setViewYear((prev) => prev + 1)}
+                onClick={() => setYearOffset((prev) => prev + 1)}
                 disabled={viewYear >= MAX_YEAR}
                 aria-label="次の年"
               >
