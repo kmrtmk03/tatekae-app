@@ -71,14 +71,8 @@ function App() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.summaryRow}>
-          {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
-          <SummaryBar expenses={expenses} />
-          <FilterButton
-            activeCount={activeFilterCount}
-            onClick={handleOpenFilterModal}
-          />
-        </div>
+        {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
+        <SummaryBar expenses={expenses} />
         <FilterTabs value={statusFilter} onChange={setStatusFilter} />
       </header>
 
@@ -97,6 +91,11 @@ function App() {
           emptyMessage={emptyMessage}
         />
       </main>
+
+      <FilterButton
+        activeCount={activeFilterCount}
+        onClick={handleOpenFilterModal}
+      />
 
       <button
         type="button"

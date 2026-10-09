@@ -18,6 +18,8 @@
 }
 
 .all {
+  flex-shrink: 0;
+  white-space: nowrap;
   height: var(--size-control-md);
   padding: 0 14px;
   border: 1px solid var(--color-border);
@@ -35,10 +37,12 @@
   color: var(--color-primary);
 }
 
-/* 色見本の丸。タップ領域は var(--size-control-md) を確保する */
+/* 色見本の丸。「すべて」と 5 色が 1 行に収まるよう、フォームの色選択より一回り小さくする */
 .option {
-  width: var(--size-control-md);
-  height: var(--size-control-md);
+  flex: 1;
+  min-width: var(--size-control-sm);
+  max-width: var(--size-control-md);
+  aspect-ratio: 1;
   padding: 0;
   border: none;
   border-radius: 50%;

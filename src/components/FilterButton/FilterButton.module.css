@@ -1,39 +1,52 @@
+/* 左下に固定するボタン。.page（最大幅は --layout-max-width・中央寄せ）の左端に揃える。見た目は追加ボタン（App.module.css の .addButton）に合わせる */
 .button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: var(--size-control-sm);
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
-  color: var(--color-text);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.button:focus-visible {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: var(--focus-ring);
-}
-
-.active {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-}
-
-.badge {
+  position: fixed;
+  left: max(16px, calc((100vw - var(--layout-max-width)) / 2 + 16px));
+  bottom: calc(16px + var(--safe-bottom));
+  z-index: 20;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
+  width: var(--size-fab);
+  height: var(--size-fab);
+  border: none;
+  border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  font-size: 0.6875rem;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.05s ease;
+}
+
+.button:hover {
+  background: var(--color-primary-hover);
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* 有効な絞り込みの数。ボタンの右上に重ねる */
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
