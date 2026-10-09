@@ -55,7 +55,7 @@ pnpm run dev
 ```
 src/
 ├── components/  # 画面部品（AddExpenseModal / ExpenseList / SummaryBar など）
-├── hooks/       # useExpenses（データ操作・保存）/ useExpenseFilters（絞り込み）
-├── lib/         # 純粋関数（保存・集計・整形・月・バリデーション・フィルタ）
+├── hooks/       # useExpenses（記録の取得・操作）/ useExpenseFilters（絞り込み・並び順）
+├── lib/         # 純粋関数（集計・整形・日付・月・バリデーション・フィルタ・並び替え）と、記録ストア・保存処理
 └── types/       # 型定義
 ```
