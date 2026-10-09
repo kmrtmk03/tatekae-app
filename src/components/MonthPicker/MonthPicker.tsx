@@ -3,6 +3,7 @@ import type { KeyboardEvent } from "react"
 import { formatMonth } from "../../lib/format.utils"
 import { parseMonthKey, toMonthKey } from "../../lib/month.utils"
 import type { TMonthKey } from "../../types/month.type"
+import { FormFieldLayout } from "../FormFieldLayout/FormFieldLayout"
 import styles from "./MonthPicker.module.css"
 
 /** 選択できる年の範囲。年の前後ボタンはこの範囲内でのみ動く */
@@ -56,68 +57,67 @@ export function MonthPicker({ label, value, onChange }: IMonthPickerProps) {
   }
 
   return (
-    <div className={styles.field} onKeyDown={handleKeyDown}>
-      <label className={styles.label} htmlFor={triggerId}>
-        {label}
-      </label>
-      <button
-        id={triggerId}
-        type="button"
-        className={styles.trigger}
-        onClick={handleToggle}
-        aria-expanded={isOpen}
-        aria-controls={listId}
-        // ラベルに紐付けるだけだと選択中の月が読み上げられないため、値も含めた名前を付ける
-        aria-label={`${label}: ${formatMonth(value)}`}
-      >
-        <span>{formatMonth(value)}</span>
-        <span className={styles.chevron} aria-hidden="true">
-          ▾
-        </span>
-      </button>
+    <FormFieldLayout label={label} htmlFor={triggerId}>
+      <div className={styles.picker} onKeyDown={handleKeyDown}>
+        <button
+          id={triggerId}
+          type="button"
+          className={styles.trigger}
+          onClick={handleToggle}
+          aria-expanded={isOpen}
+          aria-controls={listId}
+          // ラベルに紐付けるだけだと選択中の月が読み上げられないため、値も含めた名前を付ける
+          aria-label={`${label}: ${formatMonth(value)}`}
+        >
+          <span>{formatMonth(value)}</span>
+          <span className={styles.chevron} aria-hidden="true">
+            ▾
+          </span>
+        </button>
 
-      {isOpen && (
-        <div id={listId} className={styles.panel}>
-          <div className={styles.yearRow}>
-            <button
-              type="button"
-              className={styles.yearButton}
-              onClick={() => setViewYear((prev) => prev - 1)}
-              disabled={viewYear <= MIN_YEAR}
-              aria-label="前の年"
-            >
-              ‹
-            </button>
-            <span className={styles.year}>{viewYear}年</span>
-            <button
-              type="button"
-              className={styles.yearButton}
-              onClick={() => setViewYear((prev) => prev + 1)}
-              disabled={viewYear >= MAX_YEAR}
-              aria-label="次の年"
-            >
-              ›
-            </button>
+        {isOpen && (
+          <div id={listId} className={styles.panel}>
+            <div className={styles.yearRow}>
+              <button
+                type="button"
+                className={styles.yearButton}
+                onClick={() => setViewYear((prev) => prev - 1)}
+                disabled={viewYear <= MIN_YEAR}
+                aria-label="前の年"
+              >
+                ‹
+              </button>
+              <span className={styles.year}>{viewYear}年</span>
+              <button
+                type="button"
+                className={styles.yearButton}
+                onClick={() => setViewYear((prev) => prev + 1)}
+                disabled={viewYear >= MAX_YEAR}
+                aria-label="次の年"
+              >
+                ›
+              </button>
+            </div>
+            <div className={styles.months}>
+              {MONTHS.map((month) => {
+                const isSelected =
+                  viewYear === selected.year && month === selected.month
+                return (
+                  <button
+                    key={month}
+                    type="button"
+                    className={`${styles.monthButton} ${isSelected ? styles.selected : ""}`}
+                    onClick={() => handleSelectMonth(month)}
+                    aria-pressed={isSelected}
+                  >
+                    {month}月
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div className={styles.months}>
-            {MONTHS.map((month) => {
-              const isSelected =
-                viewYear === selected.year && month === selected.month
-              return (
-                <button
-                  key={month}
-                  type="button"
-                  className={`${styles.monthButton} ${isSelected ? styles.selected : ""}`}
-                  onClick={() => handleSelectMonth(month)}
-                  aria-pressed={isSelected}
-                >
-                  {month}月
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </FormFieldLayout>
   )
 }

@@ -1,5 +1,6 @@
 import { useId } from "react"
 import type { InputHTMLAttributes } from "react"
+import { FormFieldLayout } from "../FormFieldLayout/FormFieldLayout"
 import styles from "./FormField.module.css"
 
 interface IFormFieldProps extends Omit<
@@ -13,7 +14,7 @@ interface IFormFieldProps extends Omit<
 }
 
 /**
- * ラベル付きの入力欄とエラー表示をまとめたフォーム部品。
+ * ラベル付きの入力欄とエラー表示をまとめたフォーム部品（外枠は FormFieldLayout）。
  * input の id は useId で生成してラベルと紐付けるため、同じ画面に複数あっても衝突しない。
  * label / error 以外の props（type・value・onChange など）は input にそのまま渡す。
  */
@@ -21,16 +22,8 @@ export function FormField({ label, error, ...inputProps }: IFormFieldProps) {
   const inputId = useId()
 
   return (
-    <div className={styles.field}>
-      <label className={styles.label} htmlFor={inputId}>
-        {label}
-      </label>
+    <FormFieldLayout label={label} htmlFor={inputId} error={error}>
       <input id={inputId} className={styles.input} {...inputProps} />
-      {error && (
-        <p className={styles.errorText} role="alert">
-          {error}
-        </p>
-      )}
-    </div>
+    </FormFieldLayout>
   )
 }
