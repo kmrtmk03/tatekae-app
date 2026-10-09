@@ -4,8 +4,8 @@ import type { TMonthFilter, TMonthKey } from "../types/month.type"
 /** 月フィルタで「すべての月」を表す値 */
 export const ALL_MONTHS = "all" satisfies TMonthFilter
 
-/** 'YYYY-MM' 形式かを判定する正規表現 */
-const MONTH_KEY_PATTERN = /^\d{4}-\d{2}$/
+/** 'YYYY-MM' 形式（月は 01〜12）かを判定する正規表現 */
+const MONTH_KEY_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
 
 /**
  * 値が月キー（'YYYY-MM'）かを判定する型ガード。
@@ -23,21 +23,30 @@ export function isMonthFilter(value: string): value is TMonthFilter {
   return value === ALL_MONTHS || isMonthKey(value)
 }
 
-/** 'YYYY-MM-DD' から月キー 'YYYY-MM' を取り出す。日付の形式が不正な場合は null */
+/**
+ * 'YYYY-MM-DD' の日付文字列から月キー 'YYYY-MM' を取り出す。形式が不正な場合は null。
+ * 記録が日付（'YYYY-MM-DD'）で保存されていた旧データを、精算月へ変換するために使う。
+ */
 export function getMonthKey(date: string): TMonthKey | null {
   const monthKey = date.slice(0, 7)
   return isMonthKey(monthKey) ? monthKey : null
 }
 
+/** 今月の月キーを 'YYYY-MM' で返す（タイムゾーンのずれを避けるためローカル日時で組み立てる） */
+export function currentMonthKey(): TMonthKey {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  return `${year}-${month}` as TMonthKey
+}
+
 /**
- * 記録が存在する月の月キー（'YYYY-MM'）を新しい順に返す。
- * 日付の形式が不正な記録は月の候補に含めない（「すべての月」では表示される）。
+ * 記録が存在する精算月の月キー（'YYYY-MM'）を新しい順に返す。
  */
 export function listMonthKeys(expenses: IExpense[]): TMonthKey[] {
   const monthKeys = new Set<TMonthKey>()
   for (const expense of expenses) {
-    const monthKey = getMonthKey(expense.date)
-    if (monthKey) monthKeys.add(monthKey)
+    monthKeys.add(expense.month)
   }
   // 'YYYY-MM' は文字列の降順がそのまま新しい順になる
   return [...monthKeys].sort().reverse()

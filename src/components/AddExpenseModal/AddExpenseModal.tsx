@@ -10,7 +10,7 @@ interface IAddExpenseModalProps {
 
 /**
  * 記録の新規追加フォームを画面中央のモーダルで表示する。
- * 開くたびにマウントされるため、日付は常に当日へ初期化される。
+ * 開くたびにマウントされるため、精算月は常に今月へ初期化される。
  */
 export function AddExpenseModal({ onSubmit, onClose }: IAddExpenseModalProps) {
   function handleSubmit(input: TExpenseInput) {

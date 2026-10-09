@@ -4,7 +4,7 @@ import styles from "./ExpenseForm.module.css"
 import { useExpenseForm } from "./hooks/useExpenseForm"
 
 interface IExpenseFormProps {
-  /** 初期値。未指定なら日付は当日、項目名・金額は空（新規追加用） */
+  /** 初期値。未指定なら精算月は今月、項目名・金額は空（新規追加用） */
   initialValues?: TExpenseInput
   /** 送信ボタンの文言。例: 「登録する」「保存する」 */
   submitLabel: string
@@ -14,14 +14,14 @@ interface IExpenseFormProps {
   onCancel?: () => void
 }
 
-/** 記録の追加・編集に共通する入力フォーム（項目名・日付・金額）。状態と送信処理は useExpenseForm が持つ */
+/** 記録の追加・編集に共通する入力フォーム（項目名・精算月・金額）。状態と送信処理は useExpenseForm が持つ */
 export function ExpenseForm({
   initialValues,
   submitLabel,
   onSubmit,
   onCancel,
 }: IExpenseFormProps) {
-  const { values, setDate, setTitle, setAmount, errors, handleSubmit } =
+  const { values, setMonth, setTitle, setAmount, errors, handleSubmit } =
     useExpenseForm({ initialValues, onSubmit })
 
   return (
@@ -37,11 +37,11 @@ export function ExpenseForm({
       />
 
       <FormField
-        label="日付"
-        type="date"
-        value={values.date}
-        onChange={(e) => setDate(e.target.value)}
-        error={errors.date}
+        label="精算月"
+        type="month"
+        value={values.month}
+        onChange={(e) => setMonth(e.target.value)}
+        error={errors.month}
       />
 
       <FormField
