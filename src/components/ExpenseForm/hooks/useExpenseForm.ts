@@ -1,17 +1,16 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
-import { DEFAULT_EXPENSE_COLOR } from "../../../lib/expense-color.constants"
 import { currentMonthKey } from "../../../lib/month.utils"
 import { parseExpenseInput } from "../../../lib/validation.utils"
 import type { IExpenseFormErrors } from "../../../lib/validation.utils"
-import type { TExpenseColor, TExpenseInput } from "../../../types/expense.type"
+import type { TExpenseInput } from "../../../types/expense.type"
 import type { TMonthKey } from "../../../types/month.type"
 
 interface IUseExpenseFormParams {
   /** 初期値。未指定なら精算月は今月、項目名・金額は空（新規追加用） */
   initialValues?: TExpenseInput
-  /** バリデーションを通過した入力値とラベル色を受け取る。色は新規追加でのみ使う */
-  onSubmit: (input: TExpenseInput, color: TExpenseColor) => void
+  /** バリデーションを通過した入力値を受け取る */
+  onSubmit: (input: TExpenseInput) => void
 }
 
 /**
@@ -33,7 +32,6 @@ export function useExpenseForm({
   const [amount, setAmount] = useState(
     initialValues ? String(initialValues.amount) : "",
   )
-  const [color, setColor] = useState<TExpenseColor>(DEFAULT_EXPENSE_COLOR)
   const [errors, setErrors] = useState<IExpenseFormErrors>({})
 
   /** フォームの送信。検証エラーがあれば errors に入れて onSubmit は呼ばない */
@@ -47,16 +45,15 @@ export function useExpenseForm({
     }
 
     setErrors({})
-    onSubmit(result.value, color)
+    onSubmit(result.value)
   }
 
   return {
     // 入力中の値と更新関数
-    values: { month, title, amount, color },
+    values: { month, title, amount },
     setMonth,
     setTitle,
     setAmount,
-    setColor,
     // 検証エラー（エラーのない項目は undefined）
     errors,
     // フォームの onSubmit に渡す

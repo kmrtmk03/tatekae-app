@@ -1,4 +1,3 @@
-import { useState } from "react"
 import styles from "./App.module.css"
 import { AddExpenseModal } from "./components/AddExpenseModal/AddExpenseModal"
 import { EditExpenseModal } from "./components/EditExpenseModal/EditExpenseModal"
@@ -9,17 +8,7 @@ import { FilterTabs } from "./components/FilterTabs/FilterTabs"
 import { SummaryBar } from "./components/SummaryBar/SummaryBar"
 import { useExpenseFilters } from "./hooks/useExpenseFilters"
 import { useExpenses } from "./hooks/useExpenses"
-import type { IExpense } from "./types/expense.type"
-
-/**
- * 開いているモーダルの状態。追加・編集・絞り込みが同時に開く状態を型の上で作れないようにする。
- * 編集は対象の記録を id で持つ。
- */
-type TModalState =
-  | { type: "closed" }
-  | { type: "add" }
-  | { type: "edit"; id: string }
-  | { type: "filter" }
+import { useModalState } from "./hooks/useModalState"
 
 function App() {
   const {
@@ -45,29 +34,14 @@ function App() {
     resetFilters,
   } = useExpenseFilters(expenses)
 
-  const [modal, setModal] = useState<TModalState>({ type: "closed" })
-
-  // 編集対象は id で持ち、最新の記録を expenses から引く（編集中に記録が更新されても古いコピーを見ない）
-  const editingExpense =
-    modal.type === "edit"
-      ? expenses.find((expense) => expense.id === modal.id)
-      : undefined
-
-  function handleOpenAddModal() {
-    setModal({ type: "add" })
-  }
-
-  function handleOpenEditModal(expense: IExpense) {
-    setModal({ type: "edit", id: expense.id })
-  }
-
-  function handleOpenFilterModal() {
-    setModal({ type: "filter" })
-  }
-
-  function handleCloseModal() {
-    setModal({ type: "closed" })
-  }
+  const {
+    modal,
+    editingExpense,
+    openAddModal,
+    openEditModal,
+    openFilterModal,
+    closeModal,
+  } = useModalState(expenses)
 
   return (
     <div className={styles.page}>
@@ -87,28 +61,25 @@ function App() {
         <ExpenseList
           expenses={filteredExpenses}
           onToggleSettled={toggleSettled}
-          onEdit={handleOpenEditModal}
+          onEdit={openEditModal}
           onRemove={removeExpense}
           emptyMessage={emptyMessage}
         />
       </main>
 
-      <FilterButton
-        activeCount={activeFilterCount}
-        onClick={handleOpenFilterModal}
-      />
+      <FilterButton activeCount={activeFilterCount} onClick={openFilterModal} />
 
       <button
         type="button"
         className={styles.addButton}
-        onClick={handleOpenAddModal}
+        onClick={openAddModal}
         aria-label="記録を追加"
       >
         ＋
       </button>
 
       {modal.type === "add" && (
-        <AddExpenseModal onSubmit={addExpense} onClose={handleCloseModal} />
+        <AddExpenseModal onSubmit={addExpense} onClose={closeModal} />
       )}
 
       {modal.type === "filter" && (
@@ -120,7 +91,7 @@ function App() {
           onColorToggle={toggleColor}
           onColorClear={clearColors}
           onReset={resetFilters}
-          onClose={handleCloseModal}
+          onClose={closeModal}
         />
       )}
 
@@ -128,7 +99,7 @@ function App() {
         <EditExpenseModal
           expense={editingExpense}
           onSave={updateExpense}
-          onClose={handleCloseModal}
+          onClose={closeModal}
         />
       )}
     </div>
