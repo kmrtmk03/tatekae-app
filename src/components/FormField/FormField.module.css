@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  height: 44px;
+  height: var(--size-control-md);
   padding: 0 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -37,7 +37,7 @@
 .input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  box-shadow: var(--focus-ring);
 }
 
 .errorText {

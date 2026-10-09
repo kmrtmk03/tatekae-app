@@ -12,7 +12,7 @@
 
 .cancelButton {
   flex: 1;
-  height: 48px;
+  height: var(--size-control-lg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
@@ -24,11 +24,11 @@
 
 .submit {
   flex: 1;
-  height: 48px;
+  height: var(--size-control-lg);
   border: none;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
