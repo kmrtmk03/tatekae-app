@@ -289,9 +289,10 @@
 - **未検証・未実施**: Vercel 上での実際のスキップ／ビルドの挙動（`vercel.json` を含むブランチのプッシュ時）は確認していない。ダッシュボード側の設定（Production Branch など）も未実施。ローカルでは JSON の構文と `ignoreCommand` のシェル式（`release` で終了コード 1、それ以外で 0）のみ確認した
 
 ### ヘッダーのタイトルと総額表示の削除（ユーザー指示・2026-10-09）
-- `src/App.tsx` のヘッダーから `<h1>立て替え管理</h1>` を削除し、月フィルタのみを右寄せで配置（`App.module.css` の `.title` を削除、`.titleRow` を `justify-content: flex-end` に変更）
+- `src/App.tsx` のヘッダーから `<h1>立て替え管理</h1>` を削除し、`App.module.css` の `.title` を削除
+- 上余白の解消: `SummaryBar`（左）と `MonthFilter`（右）を同じ行（`.titleRow` を `.summaryRow` に改名、`align-items: flex-start` / `justify-content: space-between`）に並べ、「未清算合計」ラベルの上端を月セレクトに揃えた。`SummaryBar.module.css` の `.bar` の上 padding を 0 に変更。モバイル幅（390×844）で目視確認済み
 - `SummaryBar` の補助情報から「総額（清算済み含む）」を削除し、「未清算 n件」のみ表示。未使用になった `sumAll`（`lib/summary.utils.ts`）は残している（削除するかは未判断）
-- ブラウザでの目視確認は未実施。`tsc -b` / `lint` / `format:check` / `pnpm test`（21件）は通過、`pnpm run build` も成功
+- 実機（iOS Safari）での確認は未実施。`tsc -b` / `lint` / `format:check` / `pnpm test`（21件）は通過、`pnpm run build` も成功
 - 注意: `index.html` の `<title>` とアプリ内の h1 見出しが無くなったため、見出し構造（アクセシビリティ）は未対応
 
 ### 次にやること

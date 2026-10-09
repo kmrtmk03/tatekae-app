@@ -16,11 +16,11 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* 月フィルタを右寄せで配置する */
-.titleRow {
+/* サマリー（左）と月フィルタ（右）を上端を揃えて1行に並べ、ヘッダーの上余白を増やさない */
+.summaryRow {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
 }
 
