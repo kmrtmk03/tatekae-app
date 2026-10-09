@@ -321,6 +321,11 @@
   - `ExpenseForm` の `isColorSelectable` フラグを廃止し、`children`（金額欄とボタンの間に差し込む追加入力欄）に変更。ラベル色の state と `ColorPicker` は `AddExpenseModal` が持つため、`useExpenseForm` / `ExpenseForm` の `onSubmit` は色を知らなくなった。`EditExpenseModal` は変更なし
   - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件）通過。ブラウザで色（紫）を選んで追加し、その色で保存されることを確認（見た目の目視は前回から変更なし。モーダルの開閉は未再確認）
 
+- **リファクタリング（優先度低の2件・同ブランチ）**:
+  - `lib/expense.store.test.ts` を追加（7件）: 追加時の色の保持と保存、`updateExpense` が色・id・作成日時・清算状態を変えないこと、清算切り替え・削除、初回読み込みで保存し直さないこと、保存失敗時の `saveError`、購読の通知と解除。ストアはモジュール読み込み時に状態を作るため、テストごとに `vi.resetModules()` で読み込み直す
+  - `MonthFilter` を `MonthSelect` に改名（ディレクトリ・ファイル・Props 型・コンポーネント名）。月の絞り込み状態そのもの（`TMonthFilter` / `isMonthFilter` / `useMonthColorFilters`）は「フィルタ」のまま
+  - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（33件）通過。改名は import 参照の付け替えのみで見た目の変更は無い（ブラウザでの再確認は未実施）
+
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
 - ラベル色の目視確認（追加フォームの色選択、一覧の帯、ダークモード）
@@ -443,7 +448,7 @@ tatekae-app/
 │   │   ├── ExpenseItem/           # 1行（チェック・編集・削除）
 │   │   ├── SummaryBar/            # 未清算合計の表示
 │   │   ├── FilterTabs/            # 清算状態フィルタ
-│   │   └── MonthFilter/           # 月フィルタ
+│   │   └── MonthSelect/           # 月の絞り込みセレクト（絞り込みモーダル内）
 │   ├── hooks/
 │   │   ├── useExpenses.ts         # 記録の取得と操作（lib/expense.store.ts を購読する薄いラッパー）
 │   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と、絞り込み後・新しい順の結果
