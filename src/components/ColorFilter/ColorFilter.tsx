@@ -1,6 +1,7 @@
 import { EXPENSE_COLOR_OPTIONS } from "../../lib/expense-color.constants"
 import type { TExpenseColor } from "../../types/expense.type"
 import { ColorSwatch } from "../ColorSwatch/ColorSwatch"
+import { ColorSwatchGroup } from "../ColorSwatchGroup/ColorSwatchGroup"
 import styles from "./ColorFilter.module.css"
 
 interface IColorFilterProps {
@@ -14,37 +15,29 @@ interface IColorFilterProps {
 
 /**
  * 表示するラベル色を絞り込む部品。5 色のボタンを複数選べ、「すべて」で選択を解除する。
- * 色だけでは伝わらないため、各色ボタンに色名を aria-label で付け、選択中は aria-pressed で示す。
+ * 色の見た目と選択状態の通知は ColorSwatch が担う。
  */
 export function ColorFilter({ value, onToggle, onClear }: IColorFilterProps) {
   const isAll = value.length === 0
   return (
-    <div className={styles.field} role="group" aria-label="ラベルの色">
-      <span className={styles.label} aria-hidden="true">
-        ラベルの色
-      </span>
-      <div className={styles.options}>
-        <button
-          type="button"
-          className={`${styles.all} ${isAll ? styles.allSelected : ""}`}
-          onClick={onClear}
-          aria-pressed={isAll}
-        >
-          すべて
-        </button>
-        {EXPENSE_COLOR_OPTIONS.map((option) => {
-          const isSelected = value.includes(option.value)
-          return (
-            <ColorSwatch
-              key={option.value}
-              color={option.value}
-              label={option.label}
-              isSelected={isSelected}
-              onClick={() => onToggle(option.value)}
-            />
-          )
-        })}
-      </div>
-    </div>
+    <ColorSwatchGroup label="ラベルの色">
+      <button
+        type="button"
+        className={`${styles.all} ${isAll ? styles.allSelected : ""}`}
+        onClick={onClear}
+        aria-pressed={isAll}
+      >
+        すべて
+      </button>
+      {EXPENSE_COLOR_OPTIONS.map((option) => (
+        <ColorSwatch
+          key={option.value}
+          color={option.value}
+          label={option.label}
+          isSelected={value.includes(option.value)}
+          onClick={() => onToggle(option.value)}
+        />
+      ))}
+    </ColorSwatchGroup>
   )
 }

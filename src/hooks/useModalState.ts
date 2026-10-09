@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import type { IExpense } from "../types/expense.type"
 
 /**
@@ -28,21 +28,23 @@ export function useModalState(expenses: IExpense[]) {
       ? expenses.find((expense) => expense.id === modal.id)
       : undefined
 
-  function handleOpenAddModal() {
+  // 返す関数は参照を安定させる。closeModal は Modal の useEffect の依存になるため、
+  // 毎回変わると Escape キーのリスナーが再レンダリングのたびに付け替わる
+  const handleOpenAddModal = useCallback(() => {
     setModal({ type: "add" })
-  }
+  }, [])
 
-  function handleOpenEditModal(expense: IExpense) {
+  const handleOpenEditModal = useCallback((expense: IExpense) => {
     setModal({ type: "edit", id: expense.id })
-  }
+  }, [])
 
-  function handleOpenFilterModal() {
+  const handleOpenFilterModal = useCallback(() => {
     setModal({ type: "filter" })
-  }
+  }, [])
 
-  function handleCloseModal() {
+  const handleCloseModal = useCallback(() => {
     setModal({ type: "closed" })
-  }
+  }, [])
 
   return {
     // 開いているモーダルと、編集対象の記録
