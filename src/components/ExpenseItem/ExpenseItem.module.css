@@ -39,7 +39,7 @@
   white-space: nowrap;
 }
 
-.date {
+.month {
   font-size: 0.75rem;
   color: var(--color-text-muted);
 }
@@ -90,7 +90,7 @@
 }
 
 .settled .title,
-.settled .date,
+.settled .month,
 .settled .amount {
   color: var(--color-text-faint);
 }

@@ -1,6 +1,6 @@
 import { useId } from "react"
 import type { IExpense } from "../../types/expense.type"
-import { formatAmount, formatDate } from "../../lib/format.utils"
+import { formatAmount, formatMonth } from "../../lib/format.utils"
 import styles from "./ExpenseItem.module.css"
 
 interface IExpenseItemProps {
@@ -41,7 +41,7 @@ export function ExpenseItem({
       </label>
       <div className={styles.content}>
         <span className={styles.title}>{expense.title}</span>
-        <span className={styles.date}>{formatDate(expense.date)}</span>
+        <span className={styles.month}>{formatMonth(expense.month)}</span>
       </div>
       <span className={styles.amount}>{formatAmount(expense.amount)}</span>
       <button

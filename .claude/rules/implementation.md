@@ -51,7 +51,7 @@ src/
 ## 仕様上の不変条件（変更するときは要確認）
 
 - **`SummaryBar` には絞り込み前の全件（`expenses`）を渡す**。月・清算状態フィルタの影響を受けない（F-04「未清算合計を常に確認できる」を優先）
-- 一覧の並び順は日付の降順、同日なら `createdAt` の降順（`useExpenseFilters` が `lib/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
+- 一覧の並び順は精算月の降順、同月なら `createdAt` の降順（`useExpenseFilters` が `lib/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
 - 追加・編集は、保存成功時にモーダルが自動で閉じる。キャンセル・×・Escape・オーバーレイのクリックは変更を破棄して閉じる
 - フィルタの選択状態（月・清算状態）は永続化しない（リロードで初期値に戻る）
 
@@ -77,10 +77,11 @@ pnpm exec tsc -b          # 型チェック
 pnpm run lint             # oxlint
 pnpm run format:check     # Prettier
 pnpm run build            # ビルド
+pnpm test                 # Vitest（lib の単体テスト）
 ```
 
 - `pnpm run lint` は警告 0 件の状態を保つ。新しい警告を増やさない（以前許容していた `useExpenses.ts` の `react(set-state-in-effect)` 警告は、保存を `lib/expense.store.ts` へ移して解消済み）
-- 自動テスト（Vitest 等）は導入していない。挙動の確認は `pnpm run dev` + ブラウザ（モバイル幅 390×844）で行い、実機（iOS Safari）で確認できていない項目は「未検証」と明記する
+- 自動テストは Vitest（`pnpm test`）。対象は `lib/*.utils.ts` の純粋関数と保存処理（`*.test.ts` を同じディレクトリに置く）。UI の挙動の確認は `pnpm run dev` + ブラウザ（モバイル幅 390×844）で行い、実機（iOS Safari）で確認できていない項目は「未検証」と明記する
 - 開発サーバーは LAN 公開済み（`vite.config.ts` の `server.host: true`）。実機確認は `http://<PCのIP>:5173` で行う。HTTP のため Service Worker（PWA）は動かない
 
 ## コミット

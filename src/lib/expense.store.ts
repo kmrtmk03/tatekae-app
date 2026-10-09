@@ -58,7 +58,7 @@ function commit(nextExpenses: IExpense[]): void {
 export function addExpense(input: TExpenseInput): void {
   const expense: IExpense = {
     id: crypto.randomUUID(),
-    date: input.date,
+    month: input.month,
     title: input.title,
     amount: input.amount,
     settled: false,
@@ -68,7 +68,7 @@ export function addExpense(input: TExpenseInput): void {
 }
 
 /**
- * 指定 id の記録の入力項目（日付・項目名・金額）を更新する。該当 id がなければ何もしない。
+ * 指定 id の記録の入力項目（精算月・項目名・金額）を更新する。該当 id がなければ何もしない。
  * id・createdAt はここでは書き換えさせない。清算状態の変更は toggleSettled を使う
  */
 export function updateExpense(id: string, patch: TExpenseInput): void {

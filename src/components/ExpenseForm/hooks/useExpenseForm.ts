@@ -1,12 +1,13 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
-import { todayISO } from "../../../lib/date.utils"
+import { currentMonthKey } from "../../../lib/month.utils"
 import { parseExpenseInput } from "../../../lib/validation.utils"
 import type { IExpenseFormErrors } from "../../../lib/validation.utils"
 import type { TExpenseInput } from "../../../types/expense.type"
+import type { TMonthKey } from "../../../types/month.type"
 
 interface IUseExpenseFormParams {
-  /** 初期値。未指定なら日付は当日、項目名・金額は空（新規追加用） */
+  /** 初期値。未指定なら精算月は今月、項目名・金額は空（新規追加用） */
   initialValues?: TExpenseInput
   /** バリデーションを通過した入力値を受け取る */
   onSubmit: (input: TExpenseInput) => void
@@ -24,7 +25,9 @@ export function useExpenseForm({
   initialValues,
   onSubmit,
 }: IUseExpenseFormParams) {
-  const [date, setDate] = useState(initialValues?.date ?? todayISO())
+  const [month, setMonth] = useState<TMonthKey>(
+    initialValues?.month ?? currentMonthKey(),
+  )
   const [title, setTitle] = useState(initialValues?.title ?? "")
   const [amount, setAmount] = useState(
     initialValues ? String(initialValues.amount) : "",
@@ -35,7 +38,7 @@ export function useExpenseForm({
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    const result = parseExpenseInput({ date, title, amount })
+    const result = parseExpenseInput({ month, title, amount })
     if (!result.ok) {
       setErrors(result.errors)
       return
@@ -47,8 +50,8 @@ export function useExpenseForm({
 
   return {
     // 入力中の値と更新関数
-    values: { date, title, amount },
-    setDate,
+    values: { month, title, amount },
+    setMonth,
     setTitle,
     setAmount,
     // 検証エラー（エラーのない項目は undefined）
