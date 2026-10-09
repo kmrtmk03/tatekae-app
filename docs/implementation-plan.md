@@ -52,7 +52,7 @@
 ### Phase 1 完了内容
 - `src/types/expense.ts`: `Expense` 型を定義（計画の3.1節どおり）
 - `src/lib/storage.ts`: `loadExpenses` / `saveExpenses` を実装
-  - `localStorage` キーは `tatekae-app/expenses/v1`（現在は v2。上記「日付から精算月への変更」参照）、`{ version, expenses }` の形で保存
+  - `localStorage` キーは `tatekae-app/expenses/v1`（現在は v3。上記「日付から精算月への変更」「コードレビュー指摘の修正」参照）、`{ version, expenses }` の形で保存
   - JSON パース失敗・`expenses` が配列でない・要素の形が不正な場合は空配列にフォールバック（型ガード `isExpense` で要素単位に検証）
   - `saveExpenses` は例外を握りつぶさず呼び出し元（`useExpenses`）に伝播させる設計
 - `src/lib/summary.ts`: `sumUnsettled` / `sumAll` を副作用なしの純粋関数として実装
@@ -325,6 +325,17 @@
   - `lib/expense.store.test.ts` を追加（7件）: 追加時の色の保持と保存、`updateExpense` が色・id・作成日時・清算状態を変えないこと、清算切り替え・削除、初回読み込みで保存し直さないこと、保存失敗時の `saveError`、購読の通知と解除。ストアはモジュール読み込み時に状態を作るため、テストごとに `vi.resetModules()` で読み込み直す
   - `MonthFilter` を `MonthSelect` に改名（ディレクトリ・ファイル・Props 型・コンポーネント名）。月の絞り込み状態そのもの（`TMonthFilter` / `isMonthFilter` / `useMonthColorFilters`）は「フィルタ」のまま
   - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（33件）通過。改名は import 参照の付け替えのみで見た目の変更は無い（ブラウザでの再確認は未実施）
+
+### コードレビュー指摘の修正（2026-10-09・ブランチ `feat/expense-color-filter`）
+`develop...HEAD` のレビュー（7件）を順に修正した。
+1. **保存先を v3 に分離**: 色を持つ形式を `tatekae-app/expenses/v3`（`version: 3`）に保存。読み込みは v3 → v2（色なし・既定色で読む）→ v1 の順で、v2・v1 は読み込み専用（書き換え・削除しない）。色を知らない旧ビルドが同じキーを上書きして色を消す問題を避けるため。旧ビルドと新ビルドは v3 以降同期しない
+2. **絞り込みで隠れる記録の追加**: `useExpenseFilters.revealNewExpense` を追加し、追加した記録が今の絞り込み（月・色・清算状態）に合わないときだけ絞り込みを全解除する。判定は `lib/filter.utils.ts` の `matchesFilter`（`filterExpenses` も内部で使う）
+3. **`useModalState` の `useCallback` 化**: 返す関数の参照を安定させ、`Modal` の Escape リスナーが再レンダリングごとに付け替わらないようにした
+4. **`ColorSwatchGroup` を新設**: 見出し付きの色ボタン外枠を `ColorPicker` / `ColorFilter` で共用し、重複していた CSS を削除（`ColorPicker.module.css` は不要になり削除。色ボタンの間隔は 8px に統一）
+5. **`useExpenseFilters` の戻り値を明示列挙**: スプレッド展開をやめ、グループごとのコメント付きで返す
+6. **色の網羅性を型で保証**: `EXPENSE_COLOR_LABELS: Record<TExpenseColor, string>` を追加し、選択肢はその並び順リストから生成。並び順リストの網羅は `expense-color.constants.test.ts` で確認（`index.css` の色トークン・`[data-color]` ルールは手動同期のためコメントで明記）
+7. **テスト追加**: トグル・有効条件数は `filter.utils.ts` の純粋関数（`toggleColorSelection` / `countActiveFilters`）に出してテスト。`@testing-library` が未導入のためフック・モーダルの描画テストは**未追加**
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（38件）通過。ブラウザ（390×844）で、v2 の保存データが既定色で読み込まれること、赤で絞り込み中に青の記録を追加すると絞り込みが解除されて一覧に出ることを確認。iOS Safari 実機は未確認
 
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
