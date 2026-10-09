@@ -1,5 +1,6 @@
+import { useId } from "react"
 import type { IExpense } from "../../types/expense.type"
-import { formatAmount, formatDate } from "../../lib/format.utils"
+import { formatAmount, formatMonth } from "../../lib/format.utils"
 import styles from "./ExpenseItem.module.css"
 
 interface IExpenseItemProps {
@@ -19,7 +20,8 @@ export function ExpenseItem({
   onEdit,
   onRemove,
 }: IExpenseItemProps) {
-  const checkboxId = `settled-${expense.id}`
+  // 記録の id から固定文字列で組み立てず useId で生成し、ページ内の他の id との衝突を避ける
+  const checkboxId = useId()
 
   function handleRemove() {
     if (window.confirm(`「${expense.title}」を削除しますか？`)) {
@@ -39,7 +41,7 @@ export function ExpenseItem({
       </label>
       <div className={styles.content}>
         <span className={styles.title}>{expense.title}</span>
-        <span className={styles.date}>{formatDate(expense.date)}</span>
+        <span className={styles.month}>{formatMonth(expense.month)}</span>
       </div>
       <span className={styles.amount}>{formatAmount(expense.amount)}</span>
       <button

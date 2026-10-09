@@ -12,8 +12,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--size-control-md);
+  min-height: var(--size-control-md);
   cursor: pointer;
 }
 
@@ -39,7 +39,7 @@
   white-space: nowrap;
 }
 
-.date {
+.month {
   font-size: 0.75rem;
   color: var(--color-text-muted);
 }
@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   min-width: 40px;
-  min-height: 44px;
+  min-height: var(--size-control-md);
   border: none;
   background: transparent;
   color: var(--color-text-faint);
@@ -90,7 +90,7 @@
 }
 
 .settled .title,
-.settled .date,
+.settled .month,
 .settled .amount {
   color: var(--color-text-faint);
 }

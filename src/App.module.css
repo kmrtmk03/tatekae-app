@@ -43,8 +43,8 @@
 .listArea {
   flex: 1;
   overflow-y: auto;
-  /* 右下の追加ボタン（56px + 余白）が最後の行に被らないよう下余白を確保 */
-  padding: 4px 16px calc(88px + var(--safe-bottom));
+  /* 右下の追加ボタン（--size-fab + 上下の余白 16px × 2）が最後の行に被らないよう下余白を確保 */
+  padding: 4px 16px calc(var(--size-fab) + 32px + var(--safe-bottom));
 }
 
 /* 右下に固定する追加ボタン。.page（最大幅は --layout-max-width・中央寄せ）の右端に揃える */
@@ -56,12 +56,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: var(--size-fab);
+  height: var(--size-fab);
   border: none;
   border-radius: 50%;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   font-size: 1.75rem;
   line-height: 1;
   box-shadow: var(--shadow-md);

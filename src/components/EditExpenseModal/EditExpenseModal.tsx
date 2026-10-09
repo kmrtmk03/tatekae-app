@@ -10,7 +10,7 @@ interface IEditExpenseModalProps {
 }
 
 /**
- * 既存の記録（日付・項目名・金額）を画面中央のモーダルで編集する。
+ * 既存の記録（精算月・項目名・金額）を画面中央のモーダルで編集する。
  * 保存成功時は自動で閉じる。キャンセル・×・Escape・オーバーレイのクリックは変更を破棄して閉じる。
  */
 export function EditExpenseModal({
@@ -27,7 +27,7 @@ export function EditExpenseModal({
     <Modal title="記録を編集" onClose={onClose}>
       <ExpenseForm
         initialValues={{
-          date: expense.date,
+          month: expense.month,
           title: expense.title,
           amount: expense.amount,
         }}
