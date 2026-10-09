@@ -1,10 +1,11 @@
 import type { IExpense, TExpenseFilter } from "../types/expense.type"
+import type { TMonthFilter } from "../types/month.type"
 import { ALL_MONTHS, getMonthKey } from "./month.utils"
 
 /** 一覧の絞り込み条件 */
 export interface IExpenseFilterCondition {
   /** 表示する月。ALL_MONTHS なら月では絞り込まない。それ以外は 'YYYY-MM' */
-  month: string
+  month: TMonthFilter
   /** 清算状態。"all" なら清算状態では絞り込まない */
   status: TExpenseFilter
 }

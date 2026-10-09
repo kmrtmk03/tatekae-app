@@ -2,6 +2,7 @@ import { useState } from "react"
 import { filterExpenses } from "../lib/filter.utils"
 import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
 import type { IExpense, TExpenseFilter } from "../types/expense.type"
+import type { TMonthFilter } from "../types/month.type"
 
 /** 記録が1件もないときの一覧メッセージ */
 const EMPTY_MESSAGE_NO_RECORDS = "まだ記録がありません"
@@ -20,15 +21,16 @@ const EMPTY_MESSAGE_NO_MATCH = "該当する記録がありません"
 export function useExpenseFilters(expenses: IExpense[]) {
   const [statusFilter, setStatusFilter] = useState<TExpenseFilter>("all")
   // 利用者が選んだ月（ALL_MONTHS または 'YYYY-MM'）。実際に使う値は activeMonth
-  const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS)
+  const [selectedMonth, setSelectedMonth] = useState<TMonthFilter>(ALL_MONTHS)
 
   const monthKeys = listMonthKeys(expenses)
 
   // 選択中の月の記録が削除・編集で無くなった場合は「すべての月」に戻して扱う
   // （state を書き換えず派生値で補正するので、effect での同期は不要）
-  const activeMonth = monthKeys.includes(selectedMonth)
-    ? selectedMonth
-    : ALL_MONTHS
+  const activeMonth: TMonthFilter =
+    selectedMonth !== ALL_MONTHS && monthKeys.includes(selectedMonth)
+      ? selectedMonth
+      : ALL_MONTHS
 
   const filteredExpenses = filterExpenses(expenses, {
     month: activeMonth,

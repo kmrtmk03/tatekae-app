@@ -1,5 +1,6 @@
 import { useId, useState } from "react"
 import type { FormEvent } from "react"
+import { todayISO } from "../../lib/date.utils"
 import { validateExpenseInput } from "../../lib/validation.utils"
 import type { IExpenseFormErrors } from "../../lib/validation.utils"
 import type { TExpenseInput } from "../../types/expense.type"
@@ -14,15 +15,6 @@ interface IExpenseFormProps {
   onSubmit: (input: TExpenseInput) => void
   /** 指定するとキャンセルボタンを表示する（編集用） */
   onCancel?: () => void
-}
-
-/** 今日の日付を 'YYYY-MM-DD' で返す（タイムゾーンのずれを避けるためローカル日時で組み立てる） */
-function todayISO(): string {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  return `${year}-${month}-${day}`
 }
 
 /**
