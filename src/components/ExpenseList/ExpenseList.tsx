@@ -11,13 +11,7 @@ interface IExpenseListProps {
   emptyMessage: string
 }
 
-/** 日付の降順（新しいものが上）、同日なら作成日時の降順で並べるための比較関数 */
-function compareExpenses(a: IExpense, b: IExpense): number {
-  if (a.date !== b.date) return a.date < b.date ? 1 : -1
-  return a.createdAt < b.createdAt ? 1 : -1
-}
-
-/** 記録の一覧。並べ替えはここで行うため、呼び出し側は順不同の配列を渡してよい */
+/** 記録の一覧。渡された順にそのまま表示するため、並べ替えは呼び出し側（useExpenseFilters）で済ませておくこと */
 export function ExpenseList({
   expenses,
   onToggleSettled,
@@ -29,11 +23,9 @@ export function ExpenseList({
     return <p className={styles.empty}>{emptyMessage}</p>
   }
 
-  const sorted = [...expenses].sort(compareExpenses)
-
   return (
     <ul className={styles.list}>
-      {sorted.map((expense) => (
+      {expenses.map((expense) => (
         <ExpenseItem
           key={expense.id}
           expense={expense}

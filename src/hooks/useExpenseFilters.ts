@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { filterExpenses } from "../lib/filter.utils"
 import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
+import { sortExpensesNewestFirst } from "../lib/sort.utils"
 import type { IExpense, TExpenseFilter } from "../types/expense.type"
 import type { TMonthFilter } from "../types/month.type"
 
@@ -13,7 +14,7 @@ const EMPTY_MESSAGE_NO_MATCH = "該当する記録がありません"
  * 一覧の絞り込み状態（月・清算状態）と、絞り込み後の記録を管理するフック。
  *
  * - 入力: useExpenses が返す全件の expenses
- * - 出力: ExpenseList に渡す filteredExpenses と、フィルタ UI（MonthFilter / FilterTabs）用の値・操作
+ * - 出力: ExpenseList に渡す、絞り込み後かつ新しい順に並べた filteredExpenses と、フィルタ UI（MonthFilter / FilterTabs）用の値・操作
  *
  * MEMO: 未清算合計などのサマリーは絞り込み前の全件で計算するため、
  * SummaryBar には filteredExpenses ではなく元の expenses を渡すこと。
@@ -32,10 +33,13 @@ export function useExpenseFilters(expenses: IExpense[]) {
       ? selectedMonth
       : ALL_MONTHS
 
-  const filteredExpenses = filterExpenses(expenses, {
-    month: activeMonth,
-    status: statusFilter,
-  })
+  // 絞り込んだあとに新しい順へ並べる（一覧の並び順はここで決まる）
+  const filteredExpenses = sortExpensesNewestFirst(
+    filterExpenses(expenses, {
+      month: activeMonth,
+      status: statusFilter,
+    }),
+  )
 
   const emptyMessage =
     expenses.length === 0 ? EMPTY_MESSAGE_NO_RECORDS : EMPTY_MESSAGE_NO_MATCH
