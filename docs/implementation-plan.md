@@ -305,11 +305,11 @@
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（22件）通過。ブラウザでの目視確認・実機（iOS Safari）は**未実施**
 
 ### ラベル色フィルタ（ユーザー指示・2026-10-09）
-- 絞り込みボタン `FilterButton` は**画面左下**に固定する丸ボタン（右下の追加ボタンと同じ見た目・ファンネルのアイコン、有効条件数は右上のバッジ）。ヘッダー右にあった月セレクトは廃止し、ボタンを押すと `FilterModal` が開く。モーダルに精算月（`MonthFilter` をモーダル内用に全幅化・`id` 受け取りに変更）とラベル色（`ColorFilter`: 「すべて」＋5色）を置いた。選択は即時に一覧へ反映され、「解除」で月・色を初期化、「完了」で閉じる
+- 絞り込みボタン `FilterButton` は**画面左下**に固定する丸ボタン（右下の追加ボタンと同じ見た目・ファンネルのアイコン、有効条件数は右上のバッジ）。ヘッダー右にあった月セレクトは廃止し、ボタンを押すと `FilterModal` が開く。モーダルに精算月（`MonthFilter` をモーダル内用に全幅化・`id` 受け取りに変更）とラベル色（`ColorFilter`: 「すべて」＋5色。**色は複数選択可**で、タップで選択／解除を切り替え、選んだ色のいずれかに一致する記録を表示。何も選ばない状態＝「すべて」）を置いた。選択は即時に一覧へ反映され、「解除」で月・色を初期化、「完了」で閉じる
 - 清算状態のタブ（`FilterTabs`）はヘッダーに残した（モーダルに入れるのは月と色のみ）
-- `filterExpenses` に `color` 条件を追加（月 → 色 → 清算状態の順）。`useExpenseFilters` に `colorFilter` / `activeFilterCount` / `resetFilters` を追加。フィルタ状態は従来どおり永続化しない
+- `filterExpenses` に `colors`（空配列＝絞り込みなし）条件を追加（月 → 色 → 清算状態の順）。`useExpenseFilters` に `selectedColors` / `toggleColor` / `clearColors` / `activeFilterCount` / `resetFilters` を追加。フィルタ状態は従来どおり永続化しない
 - `ColorFilter` と `ColorPicker` / `ExpenseItem` で色クラスのCSSが重複している（CSS Modules の制約。色が増えるときは3か所を直す）
-- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（25件、`filter.utils.test.ts` 追加）通過。モバイル幅（390×844）のブラウザで、左下ボタン・モーダル・色での絞り込み・バッジ表示を目視確認済み。実機（iOS Safari）は**未実施**
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件、`filter.utils.test.ts` 追加）通過。モバイル幅（390×844）のブラウザで、左下ボタン・モーダル・色での絞り込み・バッジ表示を目視確認済み。実機（iOS Safari）は**未実施**
 
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
