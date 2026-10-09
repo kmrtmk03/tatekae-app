@@ -354,7 +354,7 @@
   - `lib/expense/`: `expense-color.constants` / `filter.utils` / `sort.utils` / `summary.utils` / `validation.utils`
   - `lib/storage/`: `storage.utils` / `expense.store`
   - `lib/` 直下: `month.utils` / `format.utils`（`expense` と `storage` の両方から使われるため、どちらにも入れていない）
-- テストは対象と同じディレクトリへ移動。バレル（`index.ts`）は作っていない
+- テストは各ディレクトリ内の `tests/` に置く（`lib/tests/` = month・format、`lib/expense/tests/`、`lib/storage/tests/`）。`lib/` 配下だけの方針で、hooks・components のテストは従来どおり対象と同じディレクトリ。テスト内の import は `../xxx` に付け替えた。バレル（`index.ts`）は作っていない
 - `CLAUDE.md` / `.claude/rules/implementation.md` / 本書の構成図のパス表記を更新。過去の作業記録（各リファクタリングの節）の旧パスは当時の記録として残している
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。アプリの挙動は変えていない
 
@@ -493,7 +493,8 @@ tatekae-app/
 │   │   │   ├── filter.utils.ts    # 記録の絞り込み（純粋関数）
 │   │   │   ├── sort.utils.ts      # 記録の並べ替え（新しい順）
 │   │   │   ├── summary.utils.ts   # 合計・件数計算などの純粋関数
-│   │   │   └── validation.utils.ts # フォーム入力の検証・変換（parseExpenseInput）
+│   │   │   ├── validation.utils.ts # フォーム入力の検証・変換（parseExpenseInput）
+│   │   │   └── tests/             # 上記のテスト（lib/tests/・lib/storage/tests/ も同様）
 │   │   └── storage/
 │   │       ├── storage.utils.ts   # localStorage の読み書き（型ガードで検証）
 │   │       └── expense.store.ts   # 記録の保持・保存（変更操作の中で保存。useSyncExternalStore 用）

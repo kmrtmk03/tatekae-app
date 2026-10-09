@@ -21,7 +21,7 @@ src/
 - コンポーネントは **tsx と `module.css` を同じディレクトリに置く**。CSS が無いコンポーネントも同じ構成にする
 - `index.ts`（バレル）は**作らない**。import は `../ExpenseForm/ExpenseForm` のようにファイルを直接指す
 - 他コンポーネントの CSS を import しない。共通の見た目が必要なら共通コンポーネント（例: `Modal`）にする
-- `lib` のサブディレクトリは機能のまとまりで分ける。複数のまとまりから使うものはルート直下に置く。移動してもバレルは作らず、import はファイルを直接指す
+- `lib` のサブディレクトリは機能のまとまりで分け、テストは各ディレクトリ内の `tests/` に置く（実装ファイルだけが並ぶようにするため）。複数のまとまりから使うものはルート直下に置く。移動してもバレルは作らず、import はファイルを直接指す
 - 共有ディレクトリ（`hooks` / `lib` / `types`）へ移すのは、複数箇所で実際に使われてから。先回りの共通化はしない
 - ファイル接尾辞: 型は `*.type.ts`、純粋関数・ユーティリティは `*.utils.ts`、定数が増えたら `*.constants.ts`
 
@@ -85,7 +85,7 @@ pnpm test                 # Vitest（lib・hooks・一部コンポーネント�
 ```
 
 - `pnpm run lint` は警告 0 件の状態を保つ。新しい警告を増やさない（以前許容していた `useExpenses.ts` の `react(set-state-in-effect)` 警告は、保存を `lib/storage/expense.store.ts` へ移して解消済み）
-- 自動テストは Vitest（`pnpm test`）。対象は `lib/*.utils.ts` の純粋関数と保存処理、hooks（`renderHook`）、一部コンポーネント（Testing Library）。`*.test.ts(x)` を同じディレクトリに置く。既定の環境は node で、DOM が要るテストはファイル先頭に `// @vitest-environment jsdom` を書き、`afterEach(cleanup)` で後始末する。UI の挙動の確認は `pnpm run dev` + ブラウザ（モバイル幅 390×844）で行い、実機（iOS Safari）で確認できていない項目は「未検証」と明記する
+- 自動テストは Vitest（`pnpm test`）。対象は `lib/*.utils.ts` の純粋関数と保存処理、hooks（`renderHook`）、一部コンポーネント（Testing Library）。テストの置き場所は、`lib/` 配下は各ディレクトリ直下の `tests/`（例: `lib/expense/tests/filter.utils.test.ts`）、それ以外（hooks・components）は対象と同じディレクトリ。既定の環境は node で、DOM が要るテストはファイル先頭に `// @vitest-environment jsdom` を書き、`afterEach(cleanup)` で後始末する。UI の挙動の確認は `pnpm run dev` + ブラウザ（モバイル幅 390×844）で行い、実機（iOS Safari）で確認できていない項目は「未検証」と明記する
 - 開発サーバーは LAN 公開済み（`vite.config.ts` の `server.host: true`）。実機確認は `http://<PCのIP>:5173` で行う。HTTP のため Service Worker（PWA）は動かない
 
 ## コミット
