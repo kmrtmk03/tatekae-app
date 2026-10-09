@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react"
-import { countActiveFilters, toggleColorSelection } from "../lib/filter.utils"
+import {
+  countActiveFilters,
+  toggleColorSelection,
+} from "../lib/expense/filter.utils"
 import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
 import type { IExpense, TExpenseColor } from "../types/expense.type"
 import type { TMonthFilter } from "../types/month.type"

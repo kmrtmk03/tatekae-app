@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
-import { filterExpenses, matchesFilter } from "../lib/filter.utils"
-import type { TFilterableExpense } from "../lib/filter.utils"
-import { sortExpensesNewestFirst } from "../lib/sort.utils"
+import { filterExpenses, matchesFilter } from "../lib/expense/filter.utils"
+import type { TFilterableExpense } from "../lib/expense/filter.utils"
+import { sortExpensesNewestFirst } from "../lib/expense/sort.utils"
 import type { IExpense, TExpenseFilter } from "../types/expense.type"
 import { useMonthColorFilters } from "./useMonthColorFilters"
 

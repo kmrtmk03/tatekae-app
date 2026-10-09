@@ -1,10 +1,10 @@
-import type { IExpense, TExpenseColor } from "../types/expense.type"
-import type { TMonthKey } from "../types/month.type"
+import type { IExpense, TExpenseColor } from "../../types/expense.type"
+import type { TMonthKey } from "../../types/month.type"
 import {
   DEFAULT_EXPENSE_COLOR,
   EXPENSE_COLOR_OPTIONS,
-} from "./expense-color.constants"
-import { isMonthKey } from "./month.utils"
+} from "../expense/expense-color.constants"
+import { isMonthKey } from "../month.utils"
 
 /** 現行の保存先。記録は精算月（month）とラベル色（color）で持つ */
 const STORAGE_KEY = "tatekae-app/expenses/v3"

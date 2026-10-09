@@ -1,4 +1,4 @@
-import type { IExpense } from "../types/expense.type"
+import type { IExpense } from "../../types/expense.type"
 
 /** 未清算の記録の合計金額を返す */
 export function sumUnsettled(expenses: IExpense[]): number {

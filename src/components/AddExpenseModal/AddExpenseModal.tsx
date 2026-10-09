@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { DEFAULT_EXPENSE_COLOR } from "../../lib/expense-color.constants"
+import { DEFAULT_EXPENSE_COLOR } from "../../lib/expense/expense-color.constants"
 import type {
   TExpenseColor,
   TExpenseInput,

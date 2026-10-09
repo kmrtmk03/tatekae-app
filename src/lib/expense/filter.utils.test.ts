@@ -6,7 +6,7 @@ import {
   toggleColorSelection,
 } from "./filter.utils"
 import type { IExpenseFilterCondition } from "./filter.utils"
-import type { IExpense } from "../types/expense.type"
+import type { IExpense } from "../../types/expense.type"
 
 const BASE = { title: "", amount: 1, createdAt: "" }
 
