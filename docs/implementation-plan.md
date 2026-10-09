@@ -271,11 +271,12 @@
 入力を日単位から月単位に変え、「立替精算する月」の意味にした。
 - **データモデル（仕様変更）**: `IExpense.date`（`'YYYY-MM-DD'`）を `month`（`TMonthKey`、`'YYYY-MM'`）に置き換え。`TExpenseInput` も `month` に変更。
 - **旧データの移行**: `storage.utils.ts` の `parseExpense` が、`month` が無く `date` で保存された旧データの先頭 7 文字を精算月として読み込む（保存キー・version は据え置き）。月が妥当でない要素は従来どおり除外。最初に記録を変更した時点で新形式（`month`）で保存し直される。**旧データは日の情報が失われる**（保存し直した後は戻せない）。
-- **フォーム**: 「日付」を「精算月」（`<input type="month">`、初期値は今月）に変更。検証は `parseExpenseInput` が `isMonthKey` で行い、エラー文言は「精算月を入力してください」。`isMonthKey` は月を 01〜12 に厳密化。
+- **フォーム**: 「日付」を「精算月」（初期値は今月）に変更。入力は当初 `<input type="month">` だったが、アプリの見た目に合わせるためライブラリを使わず自作の `components/MonthPicker/`（年の前後ボタン + 12 か月のグリッド。選択中の月のボタンを押すと同じ位置に展開し、月を選ぶと閉じる。一覧を開いている間の Escape は一覧のみ閉じてモーダルは閉じない）に置き換えた。`month.utils.ts` に `parseMonthKey` / `toMonthKey` を追加し、`useExpenseForm` の `month` は `TMonthKey` で保持。選べる年は 2000〜2100。検証は `parseExpenseInput` が `isMonthKey` で行い、エラー文言は「精算月を入力してください」。`isMonthKey` は月を 01〜12 に厳密化。
 - **表示・並び・絞り込み**: 一覧は「2026年10月」形式で表示。並び順は精算月の降順、同月は `createdAt` の降順。月フィルタは `expense.month` で絞り込む。
 - **削除**: `lib/date.utils.ts`（`todayISO` / `parseISODate`）と `formatDate` を削除（`currentMonthKey` は `month.utils.ts` へ）。
 - **検証結果**: `pnpm exec tsc -b` / `pnpm run lint`（警告 0）/ `pnpm run format:check` / `pnpm run build` 成功。アプリ内ブラウザで、旧形式（`date`）と不正要素を混ぜたデータを投入し、旧データが「2026年9月」で表示され不正要素が除外されること、追加フォームが「精算月」の月入力で初期値が今月（2026-10）であることを確認（確認後 localStorage は元へ戻した）。
-- **未検証**: 実機（iOS Safari）での月入力の見た目。PC の Safari は `type="month"` 非対応でテキスト入力になるため、`YYYY-MM` 形式で入力しないとエラーになる。追加・保存・編集の一連操作と、月入力のレイアウト（390px）の目視確認は未実施。
+- **月ピッカーの検証**: 390×844 のアプリ内ブラウザ（ダークモード）で、一覧の展開表示・年の切り替え・月の選択・Escape（一覧のみ閉じる）・登録して `localStorage` に `month: "2027-03"` で保存されることを確認（確認後に localStorage は戻した）。`pnpm exec tsc -b` / lint / format:check / build 成功。
+- **未検証**: 実機（iOS Safari）での表示、ライトモードでの目視、編集モーダルでの月ピッカーの操作、キーボード（Tab / Enter）操作。
 
 ### 次にやること
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
