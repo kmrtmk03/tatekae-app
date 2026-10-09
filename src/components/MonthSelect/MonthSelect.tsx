@@ -2,9 +2,9 @@ import type { ChangeEvent } from "react"
 import { formatMonth } from "../../lib/format.utils"
 import { ALL_MONTHS, isMonthFilter } from "../../lib/month.utils"
 import type { TMonthFilter, TMonthKey } from "../../types/month.type"
-import styles from "./MonthFilter.module.css"
+import styles from "./MonthSelect.module.css"
 
-interface IMonthFilterProps {
+interface IMonthSelectProps {
   /** select の id。外側のラベル（FormFieldLayout）と紐付けるため、呼び出し側で useId を使って渡すこと */
   id: string
   /** 選択中の値。ALL_MONTHS または 'YYYY-MM' */
@@ -15,12 +15,12 @@ interface IMonthFilterProps {
 }
 
 /** 表示する月を絞り込むセレクトボックス（記録が存在する月だけを選択肢に出す） */
-export function MonthFilter({
+export function MonthSelect({
   id,
   value,
   monthKeys,
   onChange,
-}: IMonthFilterProps) {
+}: IMonthSelectProps) {
   function handleChange(e: ChangeEvent<HTMLSelectElement>) {
     // 選択肢は ALL_MONTHS と monthKeys だけだが、型として保証するため検証してから渡す
     if (isMonthFilter(e.target.value)) onChange(e.target.value)

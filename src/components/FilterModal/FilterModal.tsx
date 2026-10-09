@@ -4,7 +4,7 @@ import type { TMonthFilter, TMonthKey } from "../../types/month.type"
 import { ColorFilter } from "../ColorFilter/ColorFilter"
 import { FormFieldLayout } from "../FormFieldLayout/FormFieldLayout"
 import { Modal } from "../Modal/Modal"
-import { MonthFilter } from "../MonthFilter/MonthFilter"
+import { MonthSelect } from "../MonthSelect/MonthSelect"
 import styles from "./FilterModal.module.css"
 
 interface IFilterModalProps {
@@ -45,7 +45,7 @@ export function FilterModal({
     <Modal title="絞り込み" onClose={onClose}>
       <div className={styles.body}>
         <FormFieldLayout label="精算月" htmlFor={monthFilterId}>
-          <MonthFilter
+          <MonthSelect
             id={monthFilterId}
             value={month}
             monthKeys={monthKeys}
