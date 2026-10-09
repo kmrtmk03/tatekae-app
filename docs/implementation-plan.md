@@ -16,7 +16,7 @@
 
 ---
 
-## 進捗状況（引き継ぎ用・2026-09-21時点）
+## 進捗状況（引き継ぎ用・2026-10-09時点）
 
 他セッションへの引き継ぎ用に、着手済み/未着手を記録する。作業を再開する際はこの節を更新すること。
 
@@ -30,6 +30,7 @@
 | Phase 5: スタイリングと UX | ✅ 完了 | ユーザー指示によりPhase 4より先に実施。アニメーション/Undoトースト（任意項目）は未実施 |
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
+| リファクタリング第2弾 | 🔧 作業中 | ブランチ `refactor/item-id-and-update-type`。A-2・A-4 完了、A-1・A-3・B・C・D は未着手（下記「リファクタリング第2弾」参照） |
 
 ### 当初計画からの変更点
 
@@ -243,7 +244,29 @@
 - 利用者向けの注意として、PWA は「オフライン起動はビルド成果物のブラウザ確認まで済み、実機でのホーム画面追加は未検証」、データ保存は「ブラウザの `localStorage` のみで、サイトデータを消すと失われる（同期・バックアップ・エクスポート／インポートは未実装）」と明記した
 - ドキュメントのみの変更でコード・ビルドへの影響はない。Markdown は `.prettierignore` で Prettier の対象外のため、整形チェックは行っていない。ビルド・lint は未実行
 
+### リファクタリング第2弾（ユーザー指示・ブランチ `refactor/item-id-and-update-type`・2026-10-09）
+前回のリファクタリング後のコードを見直して出した改善案（A〜D）のうち、ユーザー指示で **A-2・A-4 のみ** を実施した。挙動・見た目は変えていない。
+- **改善案一覧**（未着手の分は今後の候補）
+  - A-1: 起動直後の `useEffect` による保存で、`loadExpenses` が除外した不正要素が localStorage から消える問題。保存を変更操作側へ移す（`useSyncExternalStore` によるストア化、または `commit` 関数）。既知の `set-state-in-effect` 警告も解消できる見込み — **未着手**
+  - A-2: `ExpenseItem` のチェックボックス id を `useId` で生成 — **完了**
+  - A-3: 入力チェックと型の不一致（`IExpense.amount` は正の整数だが `1.5` / `1e3` を通す、日付が空でも保存できる）。`parseExpenseInput` への置き換え案 — **仕様変更を伴うため見送り**（ユーザー判断。仕様を確定してから別途実施）
+  - A-4: `updateExpense` の更新内容の型を `Partial<Omit<IExpense, "id">>` から `TExpenseInput` に限定 — **完了**
+  - B-1: `ExpenseForm` のロジックを `useExpenseForm` へ、入力欄を `FormField` へ切り出し、`todayISO` を `lib/date.utils.ts` へ — 未着手
+  - B-2: 日付・月の処理を `date.utils.ts` に集約し、`TMonthKey` / `TMonthFilter` 型を導入 — 未着手
+  - B-3: `App.tsx` のモーダル状態を判別共用体 1 つにまとめ、編集対象は id で持つ — 未着手
+  - B-4: 並び替え `compareExpenses` を `lib/sort.utils.ts` へ — `.claude/rules` の不変条件の文言変更が必要なため要確認・未着手
+  - C: CSS の直書き値のトークン化（`#ffffff`・オーバーレイの `rgba`・フォーカスリング・コントロール高さ等） — 未着手
+  - D: Vitest 導入（`lib` のみ）、`Modal` のアクセシビリティ改善 — 実施するか未決定
+- **A-2**: `ExpenseItem` のチェックボックス id を `settled-${expense.id}` から `useId()` に変更（`.claude/rules` の「input の id は useId」に準拠）
+- **A-4**: `useExpenses` の `updateExpense` の引数 `patch` を `TExpenseInput` に変更。`id` / `createdAt` / `settled` を更新経路から書き換えられないようにした（呼び出し元は `EditExpenseModal` のみで、元から `TExpenseInput` を渡していた）
+- **検証結果**:
+  - 各コミットで `pnpm exec tsc -b` / `pnpm run lint`（既知の警告1件のみ）/ `pnpm run format:check` 成功。最後に `pnpm run build` 成功
+  - `pnpm run dev` + アプリ内ブラウザ（390×844）でテストデータを投入して確認: チェックボックスの id が一意でラベルの `htmlFor` と一致、ラベルのクリックで清算状態が切り替わり localStorage に反映、編集保存で項目名が更新され `settled` / `createdAt` は保持。確認後に localStorage は元の内容へ戻した
+  - **未検証**: 実機（iOS Safari）での確認
+- **気付いた点（未対応）**: `ExpenseItem` のチェックボックスにはアクセシブルな名前（ラベル文言・`aria-label`）が無い
+
 ### 次にやること
+- リファクタリング第2弾の残り（推奨順: B-2 → B-1 → B-3 → A-1 → C）を進めるか、ユーザーに確認する。A-3・B-4 は仕様・不変条件の確認が先
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
 ---
