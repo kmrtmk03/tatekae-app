@@ -37,48 +37,7 @@
   color: var(--color-primary);
 }
 
-/* 色見本の丸。「すべて」と 5 色が 1 行に収まるよう、フォームの色選択より一回り小さくする */
-.option {
-  flex: 1;
-  min-width: var(--size-control-sm);
-  max-width: var(--size-control-md);
-  aspect-ratio: 1;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--option-color);
-  cursor: pointer;
-}
-
-.all:focus-visible,
-.option:focus-visible {
+.all:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-}
-
-/* 選択中は外側にリングを出す（色以外でも選択状態が分かるようにする） */
-.selected {
-  box-shadow:
-    0 0 0 2px var(--color-surface),
-    0 0 0 4px var(--option-color);
-}
-
-.red {
-  --option-color: var(--color-label-red);
-}
-
-.orange {
-  --option-color: var(--color-label-orange);
-}
-
-.green {
-  --option-color: var(--color-label-green);
-}
-
-.blue {
-  --option-color: var(--color-label-blue);
-}
-
-.purple {
-  --option-color: var(--color-label-purple);
 }

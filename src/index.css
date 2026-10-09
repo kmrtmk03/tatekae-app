@@ -75,6 +75,27 @@
   }
 }
 
+/* ラベル色（data-color="red" など）を --color-label に解決する。色を使う側はこの変数だけを参照する */
+[data-color="red"] {
+  --color-label: var(--color-label-red);
+}
+
+[data-color="orange"] {
+  --color-label: var(--color-label-orange);
+}
+
+[data-color="green"] {
+  --color-label: var(--color-label-green);
+}
+
+[data-color="blue"] {
+  --color-label: var(--color-label-blue);
+}
+
+[data-color="purple"] {
+  --color-label: var(--color-label-purple);
+}
+
 * {
   box-sizing: border-box;
 }

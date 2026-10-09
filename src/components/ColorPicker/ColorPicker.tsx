@@ -1,5 +1,6 @@
 import { EXPENSE_COLOR_OPTIONS } from "../../lib/expense-color.constants"
 import type { TExpenseColor } from "../../types/expense.type"
+import { ColorSwatch } from "../ColorSwatch/ColorSwatch"
 import styles from "./ColorPicker.module.css"
 
 interface IColorPickerProps {
@@ -25,13 +26,12 @@ export function ColorPicker({ label, value, onChange }: IColorPickerProps) {
         {EXPENSE_COLOR_OPTIONS.map((option) => {
           const isSelected = option.value === value
           return (
-            <button
+            <ColorSwatch
               key={option.value}
-              type="button"
-              className={`${styles.option} ${styles[option.value]} ${isSelected ? styles.selected : ""}`}
+              color={option.value}
+              label={option.label}
+              isSelected={isSelected}
               onClick={() => onChange(option.value)}
-              aria-label={option.label}
-              aria-pressed={isSelected}
             />
           )
         })}

@@ -6,28 +6,8 @@
   background: var(--color-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  /* 左端にラベル色の帯を出す。色は下の色クラスが --item-label-color に入れる */
-  border-left: 4px solid var(--item-label-color);
-}
-
-.red {
-  --item-label-color: var(--color-label-red);
-}
-
-.orange {
-  --item-label-color: var(--color-label-orange);
-}
-
-.green {
-  --item-label-color: var(--color-label-green);
-}
-
-.blue {
-  --item-label-color: var(--color-label-blue);
-}
-
-.purple {
-  --item-label-color: var(--color-label-purple);
+  /* 左端にラベル色の帯を出す。色は data-color から index.css が --color-label に入れる */
+  border-left: 4px solid var(--color-label);
 }
 
 .checkboxLabel {

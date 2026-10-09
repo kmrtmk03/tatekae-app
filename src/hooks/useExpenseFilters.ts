@@ -1,13 +1,8 @@
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import { filterExpenses } from "../lib/filter.utils"
-import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
 import { sortExpensesNewestFirst } from "../lib/sort.utils"
-import type {
-  IExpense,
-  TExpenseColor,
-  TExpenseFilter,
-} from "../types/expense.type"
-import type { TMonthFilter } from "../types/month.type"
+import type { IExpense, TExpenseFilter } from "../types/expense.type"
+import { useMonthColorFilters } from "./useMonthColorFilters"
 
 /** 記録が1件もないときの一覧メッセージ */
 const EMPTY_MESSAGE_NO_RECORDS = "まだ記録がありません"
@@ -19,26 +14,15 @@ const EMPTY_MESSAGE_NO_MATCH = "該当する記録がありません"
  *
  * - 入力: useExpenses が返す全件の expenses
  * - 出力: ExpenseList に渡す、絞り込み後かつ新しい順に並べた filteredExpenses と、フィルタ UI（FilterModal / FilterTabs）用の値・操作
+ * - 月・色の状態は useMonthColorFilters、清算状態はここで持つ
  *
  * MEMO: 未清算合計などのサマリーは絞り込み前の全件で計算するため、
  * SummaryBar には filteredExpenses ではなく元の expenses を渡すこと。
  */
 export function useExpenseFilters(expenses: IExpense[]) {
   const [statusFilter, setStatusFilter] = useState<TExpenseFilter>("all")
-  // 利用者が選んだ月（ALL_MONTHS または 'YYYY-MM'）。実際に使う値は activeMonth
-  const [selectedMonth, setSelectedMonth] = useState<TMonthFilter>(ALL_MONTHS)
-
-  // 表示するラベル色（複数選択）。空配列は「すべての色」
-  const [selectedColors, setSelectedColors] = useState<TExpenseColor[]>([])
-
-  const monthKeys = listMonthKeys(expenses)
-
-  // 選択中の月の記録が削除・編集で無くなった場合は「すべての月」に戻して扱う
-  // （state を書き換えず派生値で補正するので、effect での同期は不要）
-  const activeMonth: TMonthFilter =
-    selectedMonth !== ALL_MONTHS && monthKeys.includes(selectedMonth)
-      ? selectedMonth
-      : ALL_MONTHS
+  const monthColorFilters = useMonthColorFilters(expenses)
+  const { activeMonth, selectedColors } = monthColorFilters
 
   // 絞り込んだあとに新しい順へ並べる（一覧の並び順はここで決まる）
   const filteredExpenses = sortExpensesNewestFirst(
@@ -48,28 +32,6 @@ export function useExpenseFilters(expenses: IExpense[]) {
       status: statusFilter,
     }),
   )
-
-  // 絞り込みモーダルで設定する条件（月・色）のうち、絞り込みが有効なものの数。ボタンのバッジに使う
-  const activeFilterCount =
-    (activeMonth !== ALL_MONTHS ? 1 : 0) + (selectedColors.length > 0 ? 1 : 0)
-
-  /** 指定した色の選択を切り替える（選択中なら外し、未選択なら加える） */
-  const toggleColor = useCallback((color: TExpenseColor) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
-    )
-  }, [])
-
-  /** 色の絞り込みを解除して「すべての色」に戻す */
-  const clearColors = useCallback(() => {
-    setSelectedColors([])
-  }, [])
-
-  /** 月と色の絞り込みを解除する（清算状態はヘッダーのタブで操作するため対象外） */
-  const resetFilters = useCallback(() => {
-    setSelectedMonth(ALL_MONTHS)
-    setSelectedColors([])
-  }, [])
 
   const emptyMessage =
     expenses.length === 0 ? EMPTY_MESSAGE_NO_RECORDS : EMPTY_MESSAGE_NO_MATCH
@@ -81,16 +43,7 @@ export function useExpenseFilters(expenses: IExpense[]) {
     // 清算状態フィルタ
     statusFilter,
     setStatusFilter,
-    // 月フィルタ（monthKeys は選択肢、activeMonth は現在の選択）
-    monthKeys,
-    activeMonth,
-    setSelectedMonth,
-    // ラベル色フィルタ（複数選択。空なら絞り込みなし）
-    selectedColors,
-    toggleColor,
-    clearColors,
-    // 月・色フィルタをまとめて扱う（絞り込みモーダル用）
-    activeFilterCount,
-    resetFilters,
+    // 月・色フィルタ（絞り込みモーダル用。内訳は useMonthColorFilters を参照）
+    ...monthColorFilters,
   }
 }
