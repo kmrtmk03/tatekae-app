@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
-import { useModalState } from "./useModalState"
-import type { IExpense } from "../types/expense.type"
+import { useModalState } from "../useModalState"
+import type { IExpense } from "../../types/expense.type"
 
 const EXPENSE: IExpense = {
   id: "a",

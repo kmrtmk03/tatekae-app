@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
-import { useExpenseFilters } from "./useExpenseFilters"
-import type { IExpense } from "../types/expense.type"
+import { useExpenseFilters } from "../useExpenseFilters"
+import type { IExpense } from "../../types/expense.type"
 
 const BASE = { title: "", amount: 1 }
 

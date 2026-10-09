@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
-import { useMonthColorFilters } from "./useMonthColorFilters"
-import { ALL_MONTHS } from "../lib/month.utils"
-import type { IExpense } from "../types/expense.type"
+import { useMonthColorFilters } from "../useMonthColorFilters"
+import { ALL_MONTHS } from "../../lib/month.utils"
+import type { IExpense } from "../../types/expense.type"
 
 const BASE = { title: "", amount: 1, settled: false, createdAt: "" }
 
