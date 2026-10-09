@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const STORAGE_KEY = "tatekae-app/expenses/v2"
+const STORAGE_KEY = "tatekae-app/expenses/v3"
 
 /** Node には localStorage が無いため、Map ベースの最小実装に差し替える。setItem の失敗も再現できる */
 function stubLocalStorage(options?: { failOnSet?: boolean }) {
@@ -113,7 +113,7 @@ describe("保存と購読", () => {
       color: "green",
       createdAt: "2026-10-01",
     }
-    data.set(STORAGE_KEY, JSON.stringify({ version: 2, expenses: [saved] }))
+    data.set(STORAGE_KEY, JSON.stringify({ version: 3, expenses: [saved] }))
     const before = data.get(STORAGE_KEY)
 
     const store = await importStore()
