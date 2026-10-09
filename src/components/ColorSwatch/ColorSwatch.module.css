@@ -1,0 +1,24 @@
+/* 「すべて」と 5 色が 1 行に収まるよう、親の幅に合わせて縮み、タップ領域は最小でも --size-control-sm を確保する */
+.swatch {
+  flex: 1;
+  min-width: var(--size-control-sm);
+  max-width: var(--size-control-md);
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-label);
+  cursor: pointer;
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 選択中は外側にリングを出す（色以外でも選択状態が分かるようにする） */
+.selected {
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--color-label);
+}

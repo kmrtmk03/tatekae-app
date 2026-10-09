@@ -1,8 +1,8 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
 import { currentMonthKey } from "../../../lib/month.utils"
-import { parseExpenseInput } from "../../../lib/validation.utils"
-import type { IExpenseFormErrors } from "../../../lib/validation.utils"
+import { parseExpenseInput } from "../../../lib/expense/validation.utils"
+import type { IExpenseFormErrors } from "../../../lib/expense/validation.utils"
 import type { TExpenseInput } from "../../../types/expense.type"
 import type { TMonthKey } from "../../../types/month.type"
 

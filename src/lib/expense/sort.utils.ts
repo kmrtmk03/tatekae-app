@@ -1,4 +1,4 @@
-import type { IExpense } from "../types/expense.type"
+import type { IExpense } from "../../types/expense.type"
 
 /** 精算月の降順（新しいものが上）、同じ月なら作成日時の降順で並べるための比較関数 */
 function compareExpensesNewestFirst(a: IExpense, b: IExpense): number {

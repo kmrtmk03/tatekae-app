@@ -1,21 +1,15 @@
-import { useState } from "react"
 import styles from "./App.module.css"
 import { AddExpenseModal } from "./components/AddExpenseModal/AddExpenseModal"
 import { EditExpenseModal } from "./components/EditExpenseModal/EditExpenseModal"
 import { ExpenseList } from "./components/ExpenseList/ExpenseList"
+import { FilterButton } from "./components/FilterButton/FilterButton"
+import { FilterModal } from "./components/FilterModal/FilterModal"
 import { FilterTabs } from "./components/FilterTabs/FilterTabs"
-import { MonthFilter } from "./components/MonthFilter/MonthFilter"
 import { SummaryBar } from "./components/SummaryBar/SummaryBar"
 import { useExpenseFilters } from "./hooks/useExpenseFilters"
 import { useExpenses } from "./hooks/useExpenses"
-import type { IExpense } from "./types/expense.type"
-
-/**
- * 開いているモーダルの状態。追加と編集が同時に開く状態を型の上で作れないようにする。
- * 編集は対象の記録を id で持つ。
- */
-type TModalState =
-  { type: "closed" } | { type: "add" } | { type: "edit"; id: string }
+import { useModalState } from "./hooks/useModalState"
+import type { TNewExpenseInput } from "./types/expense.type"
 
 function App() {
   const {
@@ -34,39 +28,32 @@ function App() {
     monthKeys,
     activeMonth,
     setSelectedMonth,
+    selectedColors,
+    toggleColor,
+    clearColors,
+    activeFilterCount,
+    resetFilters,
+    revealNewExpense,
   } = useExpenseFilters(expenses)
 
-  const [modal, setModal] = useState<TModalState>({ type: "closed" })
-
-  // 編集対象は id で持ち、最新の記録を expenses から引く（編集中に記録が更新されても古いコピーを見ない）
-  const editingExpense =
-    modal.type === "edit"
-      ? expenses.find((expense) => expense.id === modal.id)
-      : undefined
-
-  function handleOpenAddModal() {
-    setModal({ type: "add" })
+  /** 記録を追加し、今の絞り込みで隠れる場合は絞り込みを解除して一覧に出す */
+  function handleAddExpense(input: TNewExpenseInput) {
+    addExpense(input)
+    revealNewExpense(input)
   }
 
-  function handleOpenEditModal(expense: IExpense) {
-    setModal({ type: "edit", id: expense.id })
-  }
-
-  function handleCloseModal() {
-    setModal({ type: "closed" })
-  }
+  const {
+    modal,
+    editingExpense,
+    openAddModal,
+    openEditModal,
+    openFilterModal,
+    closeModal,
+  } = useModalState(expenses)
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.titleRow}>
-          <h1 className={styles.title}>立て替え管理</h1>
-          <MonthFilter
-            value={activeMonth}
-            monthKeys={monthKeys}
-            onChange={setSelectedMonth}
-          />
-        </div>
         {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
         <SummaryBar expenses={expenses} />
         <FilterTabs value={statusFilter} onChange={setStatusFilter} />
@@ -82,30 +69,45 @@ function App() {
         <ExpenseList
           expenses={filteredExpenses}
           onToggleSettled={toggleSettled}
-          onEdit={handleOpenEditModal}
+          onEdit={openEditModal}
           onRemove={removeExpense}
           emptyMessage={emptyMessage}
         />
       </main>
 
+      <FilterButton activeCount={activeFilterCount} onClick={openFilterModal} />
+
       <button
         type="button"
         className={styles.addButton}
-        onClick={handleOpenAddModal}
+        onClick={openAddModal}
         aria-label="記録を追加"
       >
         ＋
       </button>
 
       {modal.type === "add" && (
-        <AddExpenseModal onSubmit={addExpense} onClose={handleCloseModal} />
+        <AddExpenseModal onSubmit={handleAddExpense} onClose={closeModal} />
+      )}
+
+      {modal.type === "filter" && (
+        <FilterModal
+          month={activeMonth}
+          monthKeys={monthKeys}
+          onMonthChange={setSelectedMonth}
+          colors={selectedColors}
+          onColorToggle={toggleColor}
+          onColorClear={clearColors}
+          onReset={resetFilters}
+          onClose={closeModal}
+        />
       )}
 
       {editingExpense && (
         <EditExpenseModal
           expense={editingExpense}
           onSave={updateExpense}
-          onClose={handleCloseModal}
+          onClose={closeModal}
         />
       )}
     </div>
