@@ -33,10 +33,10 @@
 | 日付→精算月への変更 | 🔧 レビュー待ち | ブランチ `feat/expense-month-only`。入力を日単位から月単位（立替精算する月）へ変更。下記「日付から精算月への変更」参照 |
 | 新規作成時のラベル色（5色） | 🔧 実装済み・目視未確認 | 追加フォームで5色から選び、一覧の左端に色の帯で表示。下記「ラベル色」参照 |
 | ラベル色での絞り込み | 🔧 実装済み・実機未確認 | ブランチ `feat/expense-color-filter`。月と色を同じ「絞り込み」モーダルで設定。下記「ラベル色フィルタ」参照 |
-| Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
+| Vercel のビルド対象を release のみに制限 | ✅ 完了 | `vercel.json`（`ignoreCommand`）を追加し、ダッシュボードの Production Branch を `release` に変更。`release` へのマージで本番デプロイされることを確認済み（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
-| コンポーネント・フックのテスト追加 | 🔧 実装済み・レビュー待ち | ブランチ `feat/add-component-tests`。Testing Library と jsdom を導入し、lib の未テスト関数・フック・一部コンポーネントのテストを追加。下記「テストの追加」参照 |
-| `lib/` のドメイン別整理 | 🔧 実装済み・レビュー待ち | ブランチ `refactor/organize-lib`（`feat/add-component-tests` から分岐）。下記「lib のドメイン別整理」参照 |
+| コンポーネント・フックのテスト追加 | ✅ 完了（PR #7 でマージ済み） | ブランチ `feat/add-component-tests`。Testing Library と jsdom を導入し、lib の未テスト関数・フック・一部コンポーネントのテストを追加。下記「テストの追加」参照 |
+| `lib/` のドメイン別整理 | ✅ 完了（PR #7 でマージ済み） | ブランチ `refactor/organize-lib`（`feat/add-component-tests` から分岐）。下記「lib のドメイン別整理」参照 |
 
 ### 当初計画からの変更点
 
@@ -290,7 +290,10 @@
 - 計画書から削除済みの Phase 7（デプロイ）の再開ではなく、ビルド対象ブランチの制限のみ
 - **注意**: `vercel.json` はプッシュされたブランチ側のファイルが読まれるため、このファイルを含まない古いブランチではスキップされない。全ブランチに確実に効かせるには、Vercel ダッシュボードの Settings → Git → Ignored Build Step に同じコマンドを設定する
 - **注意**: Production Branch（本番にするブランチ）は `vercel.json` では指定できない。`release` を本番にする場合は、ダッシュボードの Settings → Git → Production Branch で設定する
-- **未検証・未実施**: Vercel 上での実際のスキップ／ビルドの挙動（`vercel.json` を含むブランチのプッシュ時）は確認していない。ダッシュボード側の設定（Production Branch など）も未実施。ローカルでは JSON の構文と `ignoreCommand` のシェル式（`release` で終了コード 1、それ以外で 0）のみ確認した
+- **実施結果（2026-10-09）**: `develop` → `main` → `release` の順に PR（#8・#9）でマージして確認した。`main` のコミットは Vercel 上で「Canceled by Ignored Build Step」になり、`release` のコミット（`bb54913`）はビルドされた。ただしこの時点では Production Branch が `main` のままで、`release` はプレビュー扱いだった。そこで **Settings → Environments → Production → Branch Tracking を `release` に変更**（ダッシュボード操作）。変更後、`release` から本番デプロイされることを確認した
+- **運用上の注意**: Production Branch の設定を変えても、すでにビルド済みのデプロイは本番にならない（再デプロイか新しいコミットが必要）。Deployments 画面は `Environment: Production` でフィルタされていると、プレビュー（`release` 以外のブランチや、本番設定前の `release`）が表示されない
+- **未確認**: `develop`・作業ブランチのプレビュービルドが、`vercel.json` を含むコミットでも走っていたように見えた（スキップされるはずだが、コミットごとの突き合わせはしていない）。ブランチ制限が完全に効いているかは未検証
+- 以下は設定追加時点（本番設定変更前）の記述: Vercel 上での実際のスキップ／ビルドの挙動（`vercel.json` を含むブランチのプッシュ時）は確認していない。ダッシュボード側の設定（Production Branch など）も未実施。ローカルでは JSON の構文と `ignoreCommand` のシェル式（`release` で終了コード 1、それ以外で 0）のみ確認した
 
 ### ヘッダーのタイトルと総額表示の削除（ユーザー指示・2026-10-09）
 - `src/App.tsx` のヘッダーから `<h1>立て替え管理</h1>` を削除し、`App.module.css` の `.title` を削除
@@ -362,7 +365,7 @@
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
 - ラベル色の目視確認（追加フォームの色選択、一覧の帯、ダークモード）
-- Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
+- Vercel のプレビュービルドが `develop`・作業ブランチで走っていないか確認する（`vercel.json` を含むコミットで「Canceled by Ignored Build Step」になるか）
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
 - テスト未追加の `Modal` / `MonthPicker` / `FilterModal` / `App` 結合テストの追加を検討する
