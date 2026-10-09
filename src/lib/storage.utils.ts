@@ -1,15 +1,25 @@
-import type { IExpense } from "../types/expense.type"
+import type { IExpense, TExpenseColor } from "../types/expense.type"
 import type { TMonthKey } from "../types/month.type"
+import {
+  DEFAULT_EXPENSE_COLOR,
+  EXPENSE_COLOR_OPTIONS,
+} from "./expense-color.constants"
 import { isMonthKey } from "./month.utils"
 
-/** 現行の保存先。記録は精算月（month）で持つ */
-const STORAGE_KEY = "tatekae-app/expenses/v2"
+/** 現行の保存先。記録は精算月（month）とラベル色（color）で持つ */
+const STORAGE_KEY = "tatekae-app/expenses/v3"
 /**
- * 旧版の保存先。記録は日付（date）で持っていた。
+ * 旧版の保存先（v2）。記録は精算月（month）で持ち、ラベル色は持たない。
+ * 読み込み専用の移行元として扱い、書き換え・削除はしない。
+ * 色を知らない旧ビルドが同じ保存先を上書きして、色を消してしまうのを防ぐため、保存先を分けている。
+ */
+const PREVIOUS_STORAGE_KEY = "tatekae-app/expenses/v2"
+/**
+ * さらに旧版の保存先（v1）。記録は日付（date）で持っていた。
  * 読み込み専用の移行元として扱い、書き換え・削除はしない（旧版のビルドを開いても記録が消えないようにするため）。
  */
 const LEGACY_STORAGE_KEY = "tatekae-app/expenses/v1"
-const STORAGE_VERSION = 2
+const STORAGE_VERSION = 3
 
 /** 旧版の日付（'YYYY-MM-DD'）全体の形式。月だけでなく日まで形式が正しいものだけを移行する */
 const LEGACY_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -26,6 +36,14 @@ type TReadMonth = (record: Record<string, unknown>) => TMonthKey | null
 /** 値が null でないオブジェクト（プロパティを unknown として読める）かを判定する型ガード */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
+}
+
+/**
+ * 値がラベル色かを判定する型ガード。
+ * localStorage の値は手動編集や旧版で想定外になりうるため、選択肢にある文字列だけを色として扱う。
+ */
+function isExpenseColor(value: unknown): value is TExpenseColor {
+  return EXPENSE_COLOR_OPTIONS.some((option) => option.value === value)
 }
 
 /** 現行（v2）の記録から精算月を取り出す。month が 'YYYY-MM' 形式のときだけ有効 */
@@ -73,6 +91,8 @@ function parseExpense(
     title: value.title,
     amount: value.amount,
     settled: value.settled,
+    // 色を持たない旧データ・不正な値は、記録ごと捨てず既定色で読み込む
+    color: isExpenseColor(value.color) ? value.color : DEFAULT_EXPENSE_COLOR,
     createdAt: value.createdAt,
   }
 }
@@ -101,12 +121,16 @@ function parseStoredExpenses(
 
 /**
  * localStorage から記録一覧を読み込む。
- * 現行の保存先（v2）があればそれを使い、無いときだけ旧版の保存先（v1）から精算月へ変換して読み込む。
- * v1 は読むだけで書き換えない。最初に保存したとき以降は v2 が使われる。
+ * 現行の保存先（v3）があればそれを使い、無いときだけ v2、それも無いときだけ v1（日付 → 精算月へ変換）から読み込む。
+ * v2・v1 は読むだけで書き換えない。最初に保存したとき以降は v3 が使われる。
+ * v2 の記録は色を持たないため、既定色で読み込まれる。
  */
 export function loadExpenses(): IExpense[] {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (raw !== null) return parseStoredExpenses(raw, readMonth)
+
+  const previousRaw = localStorage.getItem(PREVIOUS_STORAGE_KEY)
+  if (previousRaw !== null) return parseStoredExpenses(previousRaw, readMonth)
 
   const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY)
   if (legacyRaw === null) return []

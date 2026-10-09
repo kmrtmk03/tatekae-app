@@ -4,6 +4,7 @@ import type { IExpense } from "../types/expense.type"
 
 const KEY_V1 = "tatekae-app/expenses/v1"
 const KEY_V2 = "tatekae-app/expenses/v2"
+const KEY_V3 = "tatekae-app/expenses/v3"
 
 /** Node には localStorage が無いため、Map ベースの最小実装に差し替える */
 function stubLocalStorage(): Map<string, string> {
@@ -15,6 +16,9 @@ function stubLocalStorage(): Map<string, string> {
   })
   return store
 }
+
+/** 色を持たない旧データを読み込んだときの既定色 */
+const DEFAULT_COLOR = "blue"
 
 const BASE = {
   title: "飲み会代",
@@ -34,11 +38,11 @@ describe("loadExpenses", () => {
     expect(loadExpenses()).toEqual([])
   })
 
-  it("v2 を month のまま読み込み、不正な要素だけ除く", () => {
+  it("v3 を month のまま読み込み、不正な要素だけ除く", () => {
     store.set(
-      KEY_V2,
+      KEY_V3,
       JSON.stringify({
-        version: 2,
+        version: 3,
         expenses: [
           { id: "a", month: "2026-10", ...BASE },
           { id: "b", month: "2026-13", ...BASE },
@@ -49,17 +53,51 @@ describe("loadExpenses", () => {
         ],
       }),
     )
-    expect(loadExpenses()).toEqual([{ id: "a", month: "2026-10", ...BASE }])
+    expect(loadExpenses()).toEqual([
+      { id: "a", month: "2026-10", color: DEFAULT_COLOR, ...BASE },
+    ])
+  })
+
+  it("ラベル色は有効な値だけ引き継ぎ、無い・不正なら既定色にする", () => {
+    store.set(
+      KEY_V3,
+      JSON.stringify({
+        version: 3,
+        expenses: [
+          { id: "a", month: "2026-10", color: "red", ...BASE },
+          { id: "b", month: "2026-10", color: "pink", ...BASE },
+          { id: "c", month: "2026-10", color: 1, ...BASE },
+        ],
+      }),
+    )
+    expect(loadExpenses().map((expense) => expense.color)).toEqual([
+      "red",
+      DEFAULT_COLOR,
+      DEFAULT_COLOR,
+    ])
   })
 
   it("壊れた JSON や外枠が違う値は空配列", () => {
-    store.set(KEY_V2, "{")
+    store.set(KEY_V3, "{")
     expect(loadExpenses()).toEqual([])
-    store.set(KEY_V2, JSON.stringify({ expenses: "x" }))
+    store.set(KEY_V3, JSON.stringify({ expenses: "x" }))
     expect(loadExpenses()).toEqual([])
   })
 
-  it("v2 が無ければ v1 の date を精算月（年月）へ移行して読み込む", () => {
+  it("v3 が無ければ v2（色なし）を既定色で読み込む", () => {
+    store.set(
+      KEY_V2,
+      JSON.stringify({
+        version: 2,
+        expenses: [{ id: "a", month: "2026-10", ...BASE }],
+      }),
+    )
+    expect(loadExpenses()).toEqual([
+      { id: "a", month: "2026-10", color: DEFAULT_COLOR, ...BASE },
+    ])
+  })
+
+  it("v3・v2 が無ければ v1 の date を精算月（年月）へ移行して読み込む", () => {
     store.set(
       KEY_V1,
       JSON.stringify({
@@ -73,32 +111,45 @@ describe("loadExpenses", () => {
         ],
       }),
     )
-    expect(loadExpenses()).toEqual([{ id: "a", month: "2026-09", ...BASE }])
+    expect(loadExpenses()).toEqual([
+      { id: "a", month: "2026-09", color: DEFAULT_COLOR, ...BASE },
+    ])
   })
 
-  it("v2 があれば v1 は読まない（空の v2 でも v1 は復活しない）", () => {
+  it("新しい保存先があれば古い保存先は読まない（空の v3 でも v2・v1 は復活しない）", () => {
     store.set(
       KEY_V1,
       JSON.stringify({ expenses: [{ id: "a", date: "2026-09-21", ...BASE }] }),
     )
-    store.set(KEY_V2, JSON.stringify({ version: 2, expenses: [] }))
+    store.set(
+      KEY_V2,
+      JSON.stringify({ expenses: [{ id: "b", month: "2026-10", ...BASE }] }),
+    )
+    store.set(KEY_V3, JSON.stringify({ version: 3, expenses: [] }))
     expect(loadExpenses()).toEqual([])
   })
 })
 
 describe("saveExpenses", () => {
-  it("v2 に保存し、v1 は書き換えない", () => {
+  it("v3 に保存し、v2・v1 は書き換えない", () => {
     const legacy = JSON.stringify({
       expenses: [{ id: "a", date: "2026-09-21", ...BASE }],
     })
+    const previous = JSON.stringify({
+      expenses: [{ id: "a", month: "2026-09", ...BASE }],
+    })
     store.set(KEY_V1, legacy)
-    const expenses: IExpense[] = [{ id: "a", month: "2026-09", ...BASE }]
+    store.set(KEY_V2, previous)
+    const expenses: IExpense[] = [
+      { id: "a", month: "2026-09", color: "purple", ...BASE },
+    ]
 
     saveExpenses(expenses)
 
     expect(store.get(KEY_V1)).toBe(legacy)
-    expect(JSON.parse(store.get(KEY_V2) ?? "")).toEqual({
-      version: 2,
+    expect(store.get(KEY_V2)).toBe(previous)
+    expect(JSON.parse(store.get(KEY_V3) ?? "")).toEqual({
+      version: 3,
       expenses,
     })
     expect(loadExpenses()).toEqual(expenses)

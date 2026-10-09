@@ -2,10 +2,12 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 8px 8px 4px;
+  padding: 8px 8px 8px 0;
   background: var(--color-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  /* 左端にラベル色の帯を出す。色は data-color から index.css が --color-label に入れる */
+  border-left: 4px solid var(--color-label);
 }
 
 .checkboxLabel {

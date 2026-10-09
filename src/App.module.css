@@ -16,14 +16,6 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* サマリー（左）と月フィルタ（右）を上端を揃えて1行に並べ、ヘッダーの上余白を増やさない */
-.summaryRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .alert {
   margin: 0 20px 12px;
   padding: 10px 14px;

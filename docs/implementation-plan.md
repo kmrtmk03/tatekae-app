@@ -31,6 +31,8 @@
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
 | 日付→精算月への変更 | 🔧 レビュー待ち | ブランチ `feat/expense-month-only`。入力を日単位から月単位（立替精算する月）へ変更。下記「日付から精算月への変更」参照 |
+| 新規作成時のラベル色（5色） | 🔧 実装済み・目視未確認 | 追加フォームで5色から選び、一覧の左端に色の帯で表示。下記「ラベル色」参照 |
+| ラベル色での絞り込み | 🔧 実装済み・実機未確認 | ブランチ `feat/expense-color-filter`。月と色を同じ「絞り込み」モーダルで設定。下記「ラベル色フィルタ」参照 |
 | Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 
@@ -50,7 +52,7 @@
 ### Phase 1 完了内容
 - `src/types/expense.ts`: `Expense` 型を定義（計画の3.1節どおり）
 - `src/lib/storage.ts`: `loadExpenses` / `saveExpenses` を実装
-  - `localStorage` キーは `tatekae-app/expenses/v1`（現在は v2。上記「日付から精算月への変更」参照）、`{ version, expenses }` の形で保存
+  - `localStorage` キーは `tatekae-app/expenses/v1`（現在は v3。上記「日付から精算月への変更」「コードレビュー指摘の修正」参照）、`{ version, expenses }` の形で保存
   - JSON パース失敗・`expenses` が配列でない・要素の形が不正な場合は空配列にフォールバック（型ガード `isExpense` で要素単位に検証）
   - `saveExpenses` は例外を握りつぶさず呼び出し元（`useExpenses`）に伝播させる設計
 - `src/lib/summary.ts`: `sumUnsettled` / `sumAll` を副作用なしの純粋関数として実装
@@ -291,11 +293,53 @@
 ### ヘッダーのタイトルと総額表示の削除（ユーザー指示・2026-10-09）
 - `src/App.tsx` のヘッダーから `<h1>立て替え管理</h1>` を削除し、`App.module.css` の `.title` を削除
 - 上余白の解消: `SummaryBar`（左）と `MonthFilter`（右）を同じ行（`.titleRow` を `.summaryRow` に改名、`align-items: flex-start` / `justify-content: space-between`）に並べ、「未清算合計」ラベルの上端を月セレクトに揃えた。`SummaryBar.module.css` の `.bar` の上 padding を 0 に変更。モバイル幅（390×844）で目視確認済み
-- `SummaryBar` の補助情報から「総額（清算済み含む）」を削除し、「未清算 n件」のみ表示。未使用になった `sumAll`（`lib/summary.utils.ts`）は残している（削除するかは未判断）
+- `SummaryBar` の補助情報から「総額（清算済み含む）」を削除し、「未清算 n件」のみ表示。未使用になった `sumAll`（`lib/summary.utils.ts`）は、リファクタリング（優先度中）で削除済み
 - 実機（iOS Safari）での確認は未実施。`tsc -b` / `lint` / `format:check` / `pnpm test`（21件）は通過、`pnpm run build` も成功
 - 注意: `index.html` の `<title>` とアプリ内の h1 見出しが無くなったため、見出し構造（アクセシビリティ）は未対応
 
+### ラベル色（ユーザー指示・2026-10-09）
+- 解釈: アプリに「ラベル」という概念が無かったため、「記録（IExpense）に付ける色」と解釈した。色は**新規作成時のみ**選べ、編集では変更しない（`updateExpense` は色を書き換えない）。別の意図（例: 月やカテゴリのラベル）なら要相談
+- 色は `red / orange / green / blue / purple` の5色（`TExpenseColor`、選択肢と既定色 `blue` は `lib/expense-color.constants.ts`）。色トークンは `index.css` の `--color-label-*`（ダークモード用も定義）
+- `IExpense.color` を追加。localStorage に色が無い旧データ・不正値は、記録を捨てず既定色（青）で読み込む（保存形式の version は据え置き）
+- UI: 追加フォームに `ColorPicker`（`isColorSelectable` 指定時のみ表示）、`ExpenseItem` の左端に色の帯
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（22件）通過。ブラウザでの目視確認・実機（iOS Safari）は**未実施**
+
+### ラベル色フィルタ（ユーザー指示・2026-10-09）
+- 絞り込みボタン `FilterButton` は**画面左下**に固定する丸ボタン（右下の追加ボタンと同じ見た目・ファンネルのアイコン、有効条件数は右上のバッジ）。ヘッダー右にあった月セレクトは廃止し、ボタンを押すと `FilterModal` が開く。モーダルに精算月（`MonthFilter` をモーダル内用に全幅化・`id` 受け取りに変更）とラベル色（`ColorFilter`: 「すべて」＋5色。**色は複数選択可**で、タップで選択／解除を切り替え、選んだ色のいずれかに一致する記録を表示。何も選ばない状態＝「すべて」）を置いた。選択は即時に一覧へ反映され、「解除」で月・色を初期化、「完了」で閉じる
+- 清算状態のタブ（`FilterTabs`）はヘッダーに残した（モーダルに入れるのは月と色のみ）
+- `filterExpenses` に `colors`（空配列＝絞り込みなし）条件を追加（月 → 色 → 清算状態の順）。`useExpenseFilters` に `selectedColors` / `toggleColor` / `clearColors` / `activeFilterCount` / `resetFilters` を追加。フィルタ状態は従来どおり永続化しない
+- **リファクタリング（優先度高の3件・同ブランチ）**:
+  - 色クラスの重複を解消: `index.css` に `[data-color="red"]` など5つのルールを置いて `--color-label` に解決し（色を足すときは `index.css` のトークンとこのルールだけを直す）、`ExpenseItem` は `data-color` と `var(--color-label)` で帯を描画
+  - 丸い色ボタンを共通コンポーネント `ColorSwatch` に切り出し、`ColorPicker`（単一選択）と `ColorFilter`（複数選択）から使用。両者は薄い部品になり、選択ロジックだけを持つ（統合はしていない）
+  - `useExpenseFilters` から月・色の状態を `hooks/useMonthColorFilters.ts` に分離。`useExpenseFilters` は清算状態・絞り込み・並べ替えを担当し、月・色フックの戻り値をそのまま展開して返すため `App.tsx` の変更は無し
+  - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件）通過。モバイル幅で一覧の色の帯・追加フォームの色選択・絞り込みモーダルの見た目が変わっていないことを目視確認
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件、`filter.utils.test.ts` 追加）通過。モバイル幅（390×844）のブラウザで、左下ボタン・モーダル・色での絞り込み・バッジ表示を目視確認済み。実機（iOS Safari）は**未実施**
+
+- **リファクタリング（優先度中の3件・同ブランチ）**:
+  - `App.tsx` のモーダル開閉（`TModalState`・編集対象の引き当て・open/close）を `hooks/useModalState.ts` に分離。`App` は配線のみになった（138行→109行）
+  - 未使用の `sumAll` を削除
+  - `ExpenseForm` の `isColorSelectable` フラグを廃止し、`children`（金額欄とボタンの間に差し込む追加入力欄）に変更。ラベル色の state と `ColorPicker` は `AddExpenseModal` が持つため、`useExpenseForm` / `ExpenseForm` の `onSubmit` は色を知らなくなった。`EditExpenseModal` は変更なし
+  - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（26件）通過。ブラウザで色（紫）を選んで追加し、その色で保存されることを確認（見た目の目視は前回から変更なし。モーダルの開閉は未再確認）
+
+- **リファクタリング（優先度低の2件・同ブランチ）**:
+  - `lib/expense.store.test.ts` を追加（7件）: 追加時の色の保持と保存、`updateExpense` が色・id・作成日時・清算状態を変えないこと、清算切り替え・削除、初回読み込みで保存し直さないこと、保存失敗時の `saveError`、購読の通知と解除。ストアはモジュール読み込み時に状態を作るため、テストごとに `vi.resetModules()` で読み込み直す
+  - `MonthFilter` を `MonthSelect` に改名（ディレクトリ・ファイル・Props 型・コンポーネント名）。月の絞り込み状態そのもの（`TMonthFilter` / `isMonthFilter` / `useMonthColorFilters`）は「フィルタ」のまま
+  - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（33件）通過。改名は import 参照の付け替えのみで見た目の変更は無い（ブラウザでの再確認は未実施）
+
+### コードレビュー指摘の修正（2026-10-09・ブランチ `feat/expense-color-filter`）
+`develop...HEAD` のレビュー（7件）を順に修正した。
+1. **保存先を v3 に分離**: 色を持つ形式を `tatekae-app/expenses/v3`（`version: 3`）に保存。読み込みは v3 → v2（色なし・既定色で読む）→ v1 の順で、v2・v1 は読み込み専用（書き換え・削除しない）。色を知らない旧ビルドが同じキーを上書きして色を消す問題を避けるため。旧ビルドと新ビルドは v3 以降同期しない
+2. **絞り込みで隠れる記録の追加**: `useExpenseFilters.revealNewExpense` を追加し、追加した記録が今の絞り込み（月・色・清算状態）に合わないときだけ絞り込みを全解除する。判定は `lib/filter.utils.ts` の `matchesFilter`（`filterExpenses` も内部で使う）
+3. **`useModalState` の `useCallback` 化**: 返す関数の参照を安定させ、`Modal` の Escape リスナーが再レンダリングごとに付け替わらないようにした
+4. **`ColorSwatchGroup` を新設**: 見出し付きの色ボタン外枠を `ColorPicker` / `ColorFilter` で共用し、重複していた CSS を削除（`ColorPicker.module.css` は不要になり削除。色ボタンの間隔は 8px に統一）
+5. **`useExpenseFilters` の戻り値を明示列挙**: スプレッド展開をやめ、グループごとのコメント付きで返す
+6. **色の網羅性を型で保証**: `EXPENSE_COLOR_LABELS: Record<TExpenseColor, string>` を追加し、選択肢はその並び順リストから生成。並び順リストの網羅は `expense-color.constants.test.ts` で確認（`index.css` の色トークン・`[data-color]` ルールは手動同期のためコメントで明記）
+7. **テスト追加**: トグル・有効条件数は `filter.utils.ts` の純粋関数（`toggleColorSelection` / `countActiveFilters`）に出してテスト。`@testing-library` が未導入のためフック・モーダルの描画テストは**未追加**
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（38件）通過。ブラウザ（390×844）で、v2 の保存データが既定色で読み込まれること、赤で絞り込み中に青の記録を追加すると絞り込みが解除されて一覧に出ることを確認。iOS Safari 実機は未確認
+
 ### 次にやること
+- ラベル色フィルタの実機（iOS Safari）確認
+- ラベル色の目視確認（追加フォームの色選択、一覧の帯、ダークモード）
 - Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
@@ -415,7 +459,7 @@ tatekae-app/
 │   │   ├── ExpenseItem/           # 1行（チェック・編集・削除）
 │   │   ├── SummaryBar/            # 未清算合計の表示
 │   │   ├── FilterTabs/            # 清算状態フィルタ
-│   │   └── MonthFilter/           # 月フィルタ
+│   │   └── MonthSelect/           # 月の絞り込みセレクト（絞り込みモーダル内）
 │   ├── hooks/
 │   │   ├── useExpenses.ts         # 記録の取得と操作（lib/expense.store.ts を購読する薄いラッパー）
 │   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と、絞り込み後・新しい順の結果
