@@ -16,19 +16,12 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* タイトルと月フィルタを1行に並べ、ヘッダーの高さを増やさない */
-.titleRow {
+/* サマリー（左）と月フィルタ（右）を上端を揃えて1行に並べ、ヘッダーの上余白を増やさない */
+.summaryRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
 }
 
 .alert {

@@ -59,16 +59,15 @@ function App() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.titleRow}>
-          <h1 className={styles.title}>立て替え管理</h1>
+        <div className={styles.summaryRow}>
+          {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
+          <SummaryBar expenses={expenses} />
           <MonthFilter
             value={activeMonth}
             monthKeys={monthKeys}
             onChange={setSelectedMonth}
           />
         </div>
-        {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
-        <SummaryBar expenses={expenses} />
         <FilterTabs value={statusFilter} onChange={setStatusFilter} />
       </header>
 
