@@ -1,4 +1,5 @@
-import type { TExpenseInput } from "../../types/expense.type"
+import type { TExpenseColor, TExpenseInput } from "../../types/expense.type"
+import { ColorPicker } from "../ColorPicker/ColorPicker"
 import { FormField } from "../FormField/FormField"
 import { MonthPicker } from "../MonthPicker/MonthPicker"
 import styles from "./ExpenseForm.module.css"
@@ -9,21 +10,31 @@ interface IExpenseFormProps {
   initialValues?: TExpenseInput
   /** 送信ボタンの文言。例: 「登録する」「保存する」 */
   submitLabel: string
-  /** バリデーションを通過した入力値を受け取る。フォームは送信後に自動では閉じない */
-  onSubmit: (input: TExpenseInput) => void
+  /** 指定するとラベル色の選択欄を表示する（新規追加用。編集では色を変えない） */
+  isColorSelectable?: boolean
+  /** バリデーションを通過した入力値と選択中のラベル色を受け取る。フォームは送信後に自動では閉じない */
+  onSubmit: (input: TExpenseInput, color: TExpenseColor) => void
   /** 指定するとキャンセルボタンを表示する（編集用） */
   onCancel?: () => void
 }
 
-/** 記録の追加・編集に共通する入力フォーム（項目名・精算月・金額）。状態と送信処理は useExpenseForm が持つ */
+/** 記録の追加・編集に共通する入力フォーム（項目名・精算月・金額。新規追加のときはラベル色も）。状態と送信処理は useExpenseForm が持つ */
 export function ExpenseForm({
   initialValues,
   submitLabel,
+  isColorSelectable = false,
   onSubmit,
   onCancel,
 }: IExpenseFormProps) {
-  const { values, setMonth, setTitle, setAmount, errors, handleSubmit } =
-    useExpenseForm({ initialValues, onSubmit })
+  const {
+    values,
+    setMonth,
+    setTitle,
+    setAmount,
+    setColor,
+    errors,
+    handleSubmit,
+  } = useExpenseForm({ initialValues, onSubmit })
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
@@ -48,6 +59,14 @@ export function ExpenseForm({
         placeholder="例: 3000"
         error={errors.amount}
       />
+
+      {isColorSelectable && (
+        <ColorPicker
+          label="ラベルの色"
+          value={values.color}
+          onChange={setColor}
+        />
+      )}
 
       <div className={styles.actions}>
         {onCancel && (

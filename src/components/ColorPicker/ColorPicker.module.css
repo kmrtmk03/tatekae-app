@@ -1,0 +1,62 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.options {
+  display: flex;
+  gap: 12px;
+}
+
+/* 見た目は丸い色見本。タップ領域は var(--size-control-md) を確保する */
+.option {
+  position: relative;
+  width: var(--size-control-md);
+  height: var(--size-control-md);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--option-color);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 選択中は外側にリングを出す（色以外でも選択状態が分かるようにする） */
+.selected {
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--option-color);
+}
+
+.red {
+  --option-color: var(--color-label-red);
+}
+
+.orange {
+  --option-color: var(--color-label-orange);
+}
+
+.green {
+  --option-color: var(--color-label-green);
+}
+
+.blue {
+  --option-color: var(--color-label-blue);
+}
+
+.purple {
+  --option-color: var(--color-label-purple);
+}

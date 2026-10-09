@@ -1,5 +1,9 @@
-import type { IExpense } from "../types/expense.type"
+import type { IExpense, TExpenseColor } from "../types/expense.type"
 import type { TMonthKey } from "../types/month.type"
+import {
+  DEFAULT_EXPENSE_COLOR,
+  EXPENSE_COLOR_OPTIONS,
+} from "./expense-color.constants"
 import { isMonthKey } from "./month.utils"
 
 /** 現行の保存先。記録は精算月（month）で持つ */
@@ -26,6 +30,14 @@ type TReadMonth = (record: Record<string, unknown>) => TMonthKey | null
 /** 値が null でないオブジェクト（プロパティを unknown として読める）かを判定する型ガード */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
+}
+
+/**
+ * 値がラベル色かを判定する型ガード。
+ * localStorage の値は手動編集や旧版で想定外になりうるため、選択肢にある文字列だけを色として扱う。
+ */
+function isExpenseColor(value: unknown): value is TExpenseColor {
+  return EXPENSE_COLOR_OPTIONS.some((option) => option.value === value)
 }
 
 /** 現行（v2）の記録から精算月を取り出す。month が 'YYYY-MM' 形式のときだけ有効 */
@@ -73,6 +85,8 @@ function parseExpense(
     title: value.title,
     amount: value.amount,
     settled: value.settled,
+    // 色を持たない旧データ・不正な値は、記録ごと捨てず既定色で読み込む
+    color: isExpenseColor(value.color) ? value.color : DEFAULT_EXPENSE_COLOR,
     createdAt: value.createdAt,
   }
 }

@@ -16,6 +16,9 @@ function stubLocalStorage(): Map<string, string> {
   return store
 }
 
+/** 色を持たない旧データを読み込んだときの既定色 */
+const DEFAULT_COLOR = "blue"
+
 const BASE = {
   title: "飲み会代",
   amount: 1000,
@@ -49,7 +52,28 @@ describe("loadExpenses", () => {
         ],
       }),
     )
-    expect(loadExpenses()).toEqual([{ id: "a", month: "2026-10", ...BASE }])
+    expect(loadExpenses()).toEqual([
+      { id: "a", month: "2026-10", color: DEFAULT_COLOR, ...BASE },
+    ])
+  })
+
+  it("ラベル色は有効な値だけ引き継ぎ、無い・不正なら既定色にする", () => {
+    store.set(
+      KEY_V2,
+      JSON.stringify({
+        version: 2,
+        expenses: [
+          { id: "a", month: "2026-10", color: "red", ...BASE },
+          { id: "b", month: "2026-10", color: "pink", ...BASE },
+          { id: "c", month: "2026-10", color: 1, ...BASE },
+        ],
+      }),
+    )
+    expect(loadExpenses().map((expense) => expense.color)).toEqual([
+      "red",
+      DEFAULT_COLOR,
+      DEFAULT_COLOR,
+    ])
   })
 
   it("壊れた JSON や外枠が違う値は空配列", () => {
@@ -73,7 +97,9 @@ describe("loadExpenses", () => {
         ],
       }),
     )
-    expect(loadExpenses()).toEqual([{ id: "a", month: "2026-09", ...BASE }])
+    expect(loadExpenses()).toEqual([
+      { id: "a", month: "2026-09", color: DEFAULT_COLOR, ...BASE },
+    ])
   })
 
   it("v2 があれば v1 は読まない（空の v2 でも v1 は復活しない）", () => {
@@ -92,7 +118,9 @@ describe("saveExpenses", () => {
       expenses: [{ id: "a", date: "2026-09-21", ...BASE }],
     })
     store.set(KEY_V1, legacy)
-    const expenses: IExpense[] = [{ id: "a", month: "2026-09", ...BASE }]
+    const expenses: IExpense[] = [
+      { id: "a", month: "2026-09", color: "purple", ...BASE },
+    ]
 
     saveExpenses(expenses)
 
