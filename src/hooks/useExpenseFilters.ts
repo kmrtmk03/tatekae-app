@@ -1,11 +1,10 @@
 import { useCallback, useState } from "react"
-import { ALL_COLORS } from "../lib/expense-color.constants"
 import { filterExpenses } from "../lib/filter.utils"
 import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
 import { sortExpensesNewestFirst } from "../lib/sort.utils"
 import type {
   IExpense,
-  TExpenseColorFilter,
+  TExpenseColor,
   TExpenseFilter,
 } from "../types/expense.type"
 import type { TMonthFilter } from "../types/month.type"
@@ -29,8 +28,8 @@ export function useExpenseFilters(expenses: IExpense[]) {
   // 利用者が選んだ月（ALL_MONTHS または 'YYYY-MM'）。実際に使う値は activeMonth
   const [selectedMonth, setSelectedMonth] = useState<TMonthFilter>(ALL_MONTHS)
 
-  const [colorFilter, setColorFilter] =
-    useState<TExpenseColorFilter>(ALL_COLORS)
+  // 表示するラベル色（複数選択）。空配列は「すべての色」
+  const [selectedColors, setSelectedColors] = useState<TExpenseColor[]>([])
 
   const monthKeys = listMonthKeys(expenses)
 
@@ -45,19 +44,31 @@ export function useExpenseFilters(expenses: IExpense[]) {
   const filteredExpenses = sortExpensesNewestFirst(
     filterExpenses(expenses, {
       month: activeMonth,
-      color: colorFilter,
+      colors: selectedColors,
       status: statusFilter,
     }),
   )
 
   // 絞り込みモーダルで設定する条件（月・色）のうち、絞り込みが有効なものの数。ボタンのバッジに使う
   const activeFilterCount =
-    (activeMonth !== ALL_MONTHS ? 1 : 0) + (colorFilter !== ALL_COLORS ? 1 : 0)
+    (activeMonth !== ALL_MONTHS ? 1 : 0) + (selectedColors.length > 0 ? 1 : 0)
+
+  /** 指定した色の選択を切り替える（選択中なら外し、未選択なら加える） */
+  const toggleColor = useCallback((color: TExpenseColor) => {
+    setSelectedColors((prev) =>
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
+    )
+  }, [])
+
+  /** 色の絞り込みを解除して「すべての色」に戻す */
+  const clearColors = useCallback(() => {
+    setSelectedColors([])
+  }, [])
 
   /** 月と色の絞り込みを解除する（清算状態はヘッダーのタブで操作するため対象外） */
   const resetFilters = useCallback(() => {
     setSelectedMonth(ALL_MONTHS)
-    setColorFilter(ALL_COLORS)
+    setSelectedColors([])
   }, [])
 
   const emptyMessage =
@@ -74,9 +85,10 @@ export function useExpenseFilters(expenses: IExpense[]) {
     monthKeys,
     activeMonth,
     setSelectedMonth,
-    // ラベル色フィルタ
-    colorFilter,
-    setColorFilter,
+    // ラベル色フィルタ（複数選択。空なら絞り込みなし）
+    selectedColors,
+    toggleColor,
+    clearColors,
     // 月・色フィルタをまとめて扱う（絞り込みモーダル用）
     activeFilterCount,
     resetFilters,

@@ -38,8 +38,9 @@ function App() {
     monthKeys,
     activeMonth,
     setSelectedMonth,
-    colorFilter,
-    setColorFilter,
+    selectedColors,
+    toggleColor,
+    clearColors,
     activeFilterCount,
     resetFilters,
   } = useExpenseFilters(expenses)
@@ -115,8 +116,9 @@ function App() {
           month={activeMonth}
           monthKeys={monthKeys}
           onMonthChange={setSelectedMonth}
-          color={colorFilter}
-          onColorChange={setColorFilter}
+          colors={selectedColors}
+          onColorToggle={toggleColor}
+          onColorClear={clearColors}
           onReset={resetFilters}
           onClose={handleCloseModal}
         />

@@ -1,5 +1,5 @@
 import { useId } from "react"
-import type { TExpenseColorFilter } from "../../types/expense.type"
+import type { TExpenseColor } from "../../types/expense.type"
 import type { TMonthFilter, TMonthKey } from "../../types/month.type"
 import { ColorFilter } from "../ColorFilter/ColorFilter"
 import { FormFieldLayout } from "../FormFieldLayout/FormFieldLayout"
@@ -13,9 +13,12 @@ interface IFilterModalProps {
   /** 月の選択肢（記録が存在する月） */
   monthKeys: TMonthKey[]
   onMonthChange: (value: TMonthFilter) => void
-  /** 選択中のラベル色。ALL_COLORS または色 */
-  color: TExpenseColorFilter
-  onColorChange: (value: TExpenseColorFilter) => void
+  /** 選択中のラベル色（複数）。空なら絞り込みなし */
+  colors: TExpenseColor[]
+  /** 色の選択を切り替える（追加／解除） */
+  onColorToggle: (color: TExpenseColor) => void
+  /** 色の選択を全て解除する */
+  onColorClear: () => void
   /** 月と色の絞り込みを解除する */
   onReset: () => void
   onClose: () => void
@@ -30,8 +33,9 @@ export function FilterModal({
   month,
   monthKeys,
   onMonthChange,
-  color,
-  onColorChange,
+  colors,
+  onColorToggle,
+  onColorClear,
   onReset,
   onClose,
 }: IFilterModalProps) {
@@ -49,7 +53,11 @@ export function FilterModal({
           />
         </FormFieldLayout>
 
-        <ColorFilter value={color} onChange={onColorChange} />
+        <ColorFilter
+          value={colors}
+          onToggle={onColorToggle}
+          onClear={onColorClear}
+        />
 
         <div className={styles.actions}>
           <button
