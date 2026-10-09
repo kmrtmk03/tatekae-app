@@ -16,7 +16,7 @@
 
 ---
 
-## 進捗状況（引き継ぎ用・2026-09-21時点）
+## 進捗状況（引き継ぎ用・2026-10-09時点）
 
 他セッションへの引き継ぎ用に、着手済み/未着手を記録する。作業を再開する際はこの節を更新すること。
 
@@ -30,6 +30,7 @@
 | Phase 5: スタイリングと UX | ✅ 完了 | ユーザー指示によりPhase 4より先に実施。アニメーション/Undoトースト（任意項目）は未実施 |
 | Phase 6: PWA 化（F-07） | ✅ 完了 | ユーザー指示によりPhase 1〜5より先に実施 |
 | Phase 8: 追加機能（MVP後） | 🔧 作業中 | フィルタ・記録の編集・月フィルタが完了。月別グルーピング（小計）/一括清算/エクスポート・インポートは未着手 |
+| リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 
 ### 当初計画からの変更点
 
@@ -243,7 +244,31 @@
 - 利用者向けの注意として、PWA は「オフライン起動はビルド成果物のブラウザ確認まで済み、実機でのホーム画面追加は未検証」、データ保存は「ブラウザの `localStorage` のみで、サイトデータを消すと失われる（同期・バックアップ・エクスポート／インポートは未実装）」と明記した
 - ドキュメントのみの変更でコード・ビルドへの影響はない。Markdown は `.prettierignore` で Prettier の対象外のため、整形チェックは行っていない。ビルド・lint は未実行
 
+### リファクタリング第2弾（ユーザー指示・ブランチ `refactor/item-id-and-update-type`・2026-10-09）
+前回のリファクタリング後のコードを見直して出した改善案（A〜D）のうち、D を除いて実施した。A-3 と B-4 は仕様・不変条件の変更を伴い、ユーザーが変更を承認したうえで実施。コミットは性質ごとに分割。
+- **A-2**: `ExpenseItem` のチェックボックス id を `settled-${expense.id}` から `useId()` に変更（`.claude/rules` の「input の id は useId」に準拠）
+- **A-4**: `updateExpense` の更新内容の型を `Partial<Omit<IExpense, "id">>` から `TExpenseInput` に限定。`id` / `createdAt` / `settled` を更新経路から書き換えられないようにした
+- **B-2**: `lib/date.utils.ts`（`todayISO` / `parseISODate`）を新設し、`ExpenseForm` 内の `todayISO` と `format.utils` の日付分解を集約。`types/month.type.ts` に `TMonthKey`（`'YYYY-MM'`）と `TMonthFilter`（`"all" | TMonthKey`）を追加し、`month.utils` に型ガード `isMonthKey` / `isMonthFilter` を追加。`MonthFilter` の `<select>` の値は型ガードで検証してから渡す
+- **B-1**: `ExpenseForm` の入力値・エラー・送信処理を `components/ExpenseForm/hooks/useExpenseForm.ts` へ、ラベル付き入力欄とエラー表示を `components/FormField/`（tsx + module.css）へ切り出し。input の `id` は `FormField` 内の `useId` で生成。`.field` / `.label` / `.input` / `.errorText` の CSS は `ExpenseForm.module.css` から `FormField.module.css` へ移動（見た目の変更なし）
+- **B-3**: `App.tsx` の `isAddModalOpen` と `editingExpense` を、判別共用体 `TModalState`（`closed` / `add` / `edit` + `id`）の state 1 つに統合。編集対象は記録のコピーではなく id で保持し、描画時に `expenses` から引く
+- **A-3（仕様変更）**: `validateExpenseInput` を、検証と変換を一度に行う `parseExpenseInput`（`{ ok: true, value } | { ok: false, errors }`）に置き換え。**金額は 1 円以上の整数のみ**（`1.5` / `1e3` / 負数 / 安全な整数の範囲を超える値は不可。以前は通っていた）、**日付は必須かつ実在する日付のみ**（以前は空でも保存できた。`2026-02-30` も不可）。日付のエラー文言「日付を入力してください」を `FormField` で日付欄の下に表示。金額のエラー文言を「金額は1円以上の整数で入力してください」に変更
+- **B-4（不変条件の変更）**: 並べ替えを `ExpenseList` 内から `lib/sort.utils.ts` の `sortExpensesNewestFirst` に切り出し、`useExpenseFilters` が絞り込み後に並べ替えるように変更。`ExpenseList` は渡された順にそのまま表示する。`.claude/rules/implementation.md` の不変条件も更新済み。あわせて、日付も作成日時も同じ記録で比較関数が常に `-1` を返していたのを `0` に修正
+- **A-1**: 記録の保存を `useEffect`（state の変更を検知して保存）から、記録を変更する操作の中へ移動。`lib/expense.store.ts`（モジュールレベルの状態 + `useSyncExternalStore` 用の `subscribeExpenses` / `getExpensesSnapshot`、操作関数 `addExpense` など）を新設し、`useExpenses` は薄いラッパーに。これにより起動時の無駄な書き込みと、`react(set-state-in-effect)` 警告（これまで許容していた 1 件）が無くなり、**lint は警告 0 件**になった。ルール文書（`.claude/rules/implementation.md`）・README も更新
+  - **注意（残る制約）**: 形式が不正で `loadExpenses` が除外した要素は、起動しただけでは消えなくなったが、**最初に記録を変更（追加・編集・清算・削除）した時点で localStorage からは消える**。不正要素を保持し続ける設計にはしていない
+  - 別タブ間の同期（`storage` イベント）は未対応。複数タブで開いたまま操作すると、後から保存したタブの内容で上書きされる
+- **C**: `index.css` に `--color-on-primary` / `--color-overlay` / `--focus-ring` / `--size-control-sm|md|lg` / `--size-fab` を追加し、各 module.css の直書き（`#ffffff` / `rgba(...)` / フォーカスリング / 高さ 36・44・48・56px）を置き換え。`Modal.module.css` の不要な `calc(16px)` を整理。見た目の変更なし。**余白（`--space-*`）のトークン化は、全ファイルに波及し効果が薄いため見送り**
+- **D（未実施）**: Vitest の導入（`lib/*.utils.ts` のみ）と `Modal` のアクセシビリティ改善（背景スクロール禁止・フォーカストラップ・フォーカスの復帰）は、依存追加・機能改善にあたるため今回は対象外
+- **検証結果**:
+  - 各コミットで `pnpm exec tsc -b` / `pnpm run lint` / `pnpm run format:check` 成功（lint は最終的に警告 0 件）。最後に `pnpm run build` 成功
+  - `parseExpenseInput` を Node（`--experimental-strip-types`）で直接実行して確認: `1.5` / `1e3` / `0` / `-5` / 空 / 桁あふれの金額、空の日付、`2026-02-30`、空白のみの項目名は失敗、`2024-02-29` と ` 飲み会 `（前後の空白は除去）は成功
+  - `pnpm run dev` + アプリ内ブラウザ（390×844）で、不正要素を混ぜたテストデータを投入して確認: 起動直後に localStorage が書き換わらない／並び順（日付降順・同日は作成日時降順）／入力欄の `id` が一意でラベルと対応／金額 `1.5` と日付が空のときのエラー表示（モーダルは開いたまま・保存されない）／正常な追加／編集モーダルの初期値と Escape で破棄／清算チェックの切り替えと localStorage への反映／月フィルタ中でも未清算合計は全件分のまま／選択中の月の最後の 1 件を削除すると「すべての月」に戻る。確認後に localStorage は元の内容へ戻した
+  - **未検証**: 実機（iOS Safari）での確認。自動テストは無いため上記は手動確認のみ。ダークモード・ライトモードの目視比較（C の CSS 変数化の前後）は行っていない（変数の値は元の直書きと同一にしており、ビルドは成功）
+- **気付いた点（未対応）**: `ExpenseItem` のチェックボックスにはアクセシブルな名前（ラベル文言・`aria-label`）が無い
+- **注意**: 本書の過去の完了内容に出てくる `useExpenses` の `useEffect` による保存、`validateExpenseInput`、`ExpenseList` 内の並べ替えなどの記述は、現在は上記のとおり変わっている
+
 ### 次にやること
+- リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
+- 必要なら D（Vitest 導入・`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
 ---
@@ -353,24 +378,29 @@ tatekae-app/
 │   │   ├── Modal/                 # 共通モーダル（オーバーレイ・ヘッダー・Escape）
 │   │   ├── AddExpenseModal/       # 追加モーダル
 │   │   ├── EditExpenseModal/      # 編集モーダル
-│   │   ├── ExpenseForm/           # 追加・編集共通の入力フォーム
+│   │   ├── ExpenseForm/           # 追加・編集共通の入力フォーム（hooks/useExpenseForm.ts を同居）
+│   │   ├── FormField/             # ラベル付き入力欄とエラー表示
 │   │   ├── ExpenseList/           # 一覧のコンテナ
 │   │   ├── ExpenseItem/           # 1行（チェック・編集・削除）
 │   │   ├── SummaryBar/            # 未清算合計の表示
 │   │   ├── FilterTabs/            # 清算状態フィルタ
 │   │   └── MonthFilter/           # 月フィルタ
 │   ├── hooks/
-│   │   ├── useExpenses.ts         # CRUD と永続化をまとめる
-│   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と結果
+│   │   ├── useExpenses.ts         # 記録の取得と操作（lib/expense.store.ts を購読する薄いラッパー）
+│   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と、絞り込み後・新しい順の結果
 │   ├── lib/
 │   │   ├── storage.utils.ts       # localStorage の読み書き（型ガードで検証）
+│   │   ├── expense.store.ts       # 記録の保持・保存（変更操作の中で保存。useSyncExternalStore 用）
 │   │   ├── format.utils.ts        # 金額・日付・月の整形
 │   │   ├── summary.utils.ts       # 合計・件数計算などの純粋関数
-│   │   ├── month.utils.ts         # 月キーの取得・一覧化
+│   │   ├── date.utils.ts          # 今日の日付・日付の分解
+│   │   ├── month.utils.ts         # 月キーの取得・一覧化・型ガード
+│   │   ├── sort.utils.ts          # 記録の並べ替え（新しい順）
 │   │   ├── filter.utils.ts        # 記録の絞り込み（純粋関数）
-│   │   └── validation.utils.ts    # フォーム入力の検証
+│   │   └── validation.utils.ts    # フォーム入力の検証・変換（parseExpenseInput）
 │   ├── types/
-│   │   └── expense.type.ts        # IExpense / TExpenseInput / TExpenseFilter
+│   │   ├── expense.type.ts        # IExpense / TExpenseInput / TExpenseFilter
+│   │   └── month.type.ts          # TMonthKey / TMonthFilter
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css
@@ -383,7 +413,7 @@ tatekae-app/
 ```
 
 **方針**: 「保存先に依存する処理」を `lib/storage.utils.ts` の1ファイルに閉じ込める。
-コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのはこの2ファイルだけで済む。
+記録の保持・保存は `lib/expense.store.ts` が担い、コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのは `storage.utils.ts` と `expense.store.ts` で済む。
 
 ---
 

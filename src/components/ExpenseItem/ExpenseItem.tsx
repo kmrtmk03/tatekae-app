@@ -1,3 +1,4 @@
+import { useId } from "react"
 import type { IExpense } from "../../types/expense.type"
 import { formatAmount, formatDate } from "../../lib/format.utils"
 import styles from "./ExpenseItem.module.css"
@@ -19,7 +20,8 @@ export function ExpenseItem({
   onEdit,
   onRemove,
 }: IExpenseItemProps) {
-  const checkboxId = `settled-${expense.id}`
+  // 記録の id から固定文字列で組み立てず useId で生成し、ページ内の他の id との衝突を避ける
+  const checkboxId = useId()
 
   function handleRemove() {
     if (window.confirm(`「${expense.title}」を削除しますか？`)) {

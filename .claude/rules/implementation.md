@@ -32,7 +32,7 @@ src/
 
 ## 外部データの扱い
 
-- 保存先（localStorage）に依存する処理は **`lib/storage.utils.ts` に閉じ込める**。コンポーネントは `useExpenses` 経由でしかデータに触らない
+- 保存先（localStorage）に依存する処理は **`lib/storage.utils.ts` に閉じ込める**。記録の保持・保存は `lib/expense.store.ts`（`useSyncExternalStore` 用のストア）が行い、保存は変更操作の中だけで呼ぶ（`useEffect` で state の変更を保存しない）。コンポーネントは `useExpenses` 経由でしかデータに触らない
 - 読み込んだ値は `unknown` で受け、`isXxx(value): value is T` の型ガードで検証してから使う（`JSON.parse(...) as T` は禁止）
 - 型ガードには「なぜその検証が必要か」をコメントで残す
 - 読み込み失敗や不正データは空配列へフォールバックし、例外を投げない。保存失敗は握りつぶさず `saveError` として画面に出す
@@ -41,7 +41,7 @@ src/
 
 - tsx は UI の記述に専念する。絞り込み・集計・整形などのロジックは **hooks か `lib/*.utils.ts` の純粋関数**に置く
   - 例: 絞り込みは `useExpenseFilters`（状態）＋ `filterExpenses`（純粋関数）
-- フックが返す関数は `useCallback` で安定化する。内部は `handleXxx`、公開名は分かりやすい名前で return し、return はグループごとにコメントを付ける（`useExpenses` を参照）
+- フックが返す関数は `useCallback` で安定化する（`useExpenses` のようにモジュールレベルの関数をそのまま返す場合は不要）。内部は `handleXxx`、公開名は分かりやすい名前で return し、return はグループごとにコメントを付ける（`useExpenseFilters` を参照）
 - **派生できる値は state にしない**。例: 選択中の月の記録が無くなったときの補正は、`useEffect` で state を書き換えず `activeMonth` を派生値として計算する
 - `useMemo` は、件数規模が小さい計算には使わない（`SummaryBar` など）。必要になったら計測してから入れる
 - 同じ入力欄・同じ見た目が 2 か所に現れたらコンポーネント化する（追加・編集で `ExpenseForm` と `Modal` を共用している）
@@ -51,7 +51,7 @@ src/
 ## 仕様上の不変条件（変更するときは要確認）
 
 - **`SummaryBar` には絞り込み前の全件（`expenses`）を渡す**。月・清算状態フィルタの影響を受けない（F-04「未清算合計を常に確認できる」を優先）
-- 一覧の並び順は日付の降順、同日なら `createdAt` の降順（`ExpenseList` 内で並べ替える）
+- 一覧の並び順は日付の降順、同日なら `createdAt` の降順（`useExpenseFilters` が `lib/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
 - 追加・編集は、保存成功時にモーダルが自動で閉じる。キャンセル・×・Escape・オーバーレイのクリックは変更を破棄して閉じる
 - フィルタの選択状態（月・清算状態）は永続化しない（リロードで初期値に戻る）
 
@@ -79,7 +79,7 @@ pnpm run format:check     # Prettier
 pnpm run build            # ビルド
 ```
 
-- `pnpm run lint` の `react(set-state-in-effect)` 警告 1 件（`useExpenses.ts`）は、保存結果を state に反映する設計として**許容**している。新しい警告を増やさない
+- `pnpm run lint` は警告 0 件の状態を保つ。新しい警告を増やさない（以前許容していた `useExpenses.ts` の `react(set-state-in-effect)` 警告は、保存を `lib/expense.store.ts` へ移して解消済み）
 - 自動テスト（Vitest 等）は導入していない。挙動の確認は `pnpm run dev` + ブラウザ（モバイル幅 390×844）で行い、実機（iOS Safari）で確認できていない項目は「未検証」と明記する
 - 開発サーバーは LAN 公開済み（`vite.config.ts` の `server.host: true`）。実機確認は `http://<PCのIP>:5173` で行う。HTTP のため Service Worker（PWA）は動かない
 

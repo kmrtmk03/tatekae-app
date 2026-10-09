@@ -14,6 +14,10 @@
   --color-primary-soft: #eef0ff;
   --color-danger: #dc2626;
   --color-danger-soft: #fdecec;
+  /* primary 背景の上に載せる文字・アイコンの色 */
+  --color-on-primary: #ffffff;
+  /* モーダルの背面を覆うオーバーレイ */
+  --color-overlay: rgba(15, 15, 25, 0.5);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -21,6 +25,15 @@
 
   --shadow-sm: 0 1px 2px rgba(17, 17, 32, 0.06);
   --shadow-md: 0 4px 16px rgba(17, 17, 32, 0.08);
+  /* 入力欄などのフォーカス時に出すリング */
+  --focus-ring: 0 0 0 3px var(--color-primary-soft);
+
+  /* 操作部品の高さ（sm: セレクト・タブ / md: 入力欄・タップ領域 / lg: フォームのボタン） */
+  --size-control-sm: 36px;
+  --size-control-md: 44px;
+  --size-control-lg: 48px;
+  /* 右下の追加ボタンの直径 */
+  --size-fab: 56px;
 
   /* アプリ全体・モーダルの最大幅 */
   --layout-max-width: 480px;

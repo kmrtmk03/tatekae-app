@@ -10,6 +10,13 @@ import { useExpenseFilters } from "./hooks/useExpenseFilters"
 import { useExpenses } from "./hooks/useExpenses"
 import type { IExpense } from "./types/expense.type"
 
+/**
+ * 開いているモーダルの状態。追加と編集が同時に開く状態を型の上で作れないようにする。
+ * 編集は対象の記録を id で持つ。
+ */
+type TModalState =
+  { type: "closed" } | { type: "add" } | { type: "edit"; id: string }
+
 function App() {
   const {
     expenses,
@@ -29,21 +36,24 @@ function App() {
     setSelectedMonth,
   } = useExpenseFilters(expenses)
 
-  // 編集モーダルの対象（null なら閉じている）
-  const [editingExpense, setEditingExpense] = useState<IExpense | null>(null)
-  // 新規追加モーダルの開閉状態
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [modal, setModal] = useState<TModalState>({ type: "closed" })
+
+  // 編集対象は id で持ち、最新の記録を expenses から引く（編集中に記録が更新されても古いコピーを見ない）
+  const editingExpense =
+    modal.type === "edit"
+      ? expenses.find((expense) => expense.id === modal.id)
+      : undefined
 
   function handleOpenAddModal() {
-    setIsAddModalOpen(true)
+    setModal({ type: "add" })
   }
 
-  function handleCloseAddModal() {
-    setIsAddModalOpen(false)
+  function handleOpenEditModal(expense: IExpense) {
+    setModal({ type: "edit", id: expense.id })
   }
 
-  function handleCloseEditModal() {
-    setEditingExpense(null)
+  function handleCloseModal() {
+    setModal({ type: "closed" })
   }
 
   return (
@@ -72,7 +82,7 @@ function App() {
         <ExpenseList
           expenses={filteredExpenses}
           onToggleSettled={toggleSettled}
-          onEdit={setEditingExpense}
+          onEdit={handleOpenEditModal}
           onRemove={removeExpense}
           emptyMessage={emptyMessage}
         />
@@ -87,15 +97,15 @@ function App() {
         ＋
       </button>
 
-      {isAddModalOpen && (
-        <AddExpenseModal onSubmit={addExpense} onClose={handleCloseAddModal} />
+      {modal.type === "add" && (
+        <AddExpenseModal onSubmit={addExpense} onClose={handleCloseModal} />
       )}
 
       {editingExpense && (
         <EditExpenseModal
           expense={editingExpense}
           onSave={updateExpense}
-          onClose={handleCloseEditModal}
+          onClose={handleCloseModal}
         />
       )}
     </div>

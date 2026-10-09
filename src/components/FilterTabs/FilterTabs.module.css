@@ -8,7 +8,7 @@
 
 .tab {
   flex: 1;
-  min-height: 36px;
+  min-height: var(--size-control-sm);
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
