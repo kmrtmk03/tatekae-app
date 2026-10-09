@@ -3,19 +3,23 @@ import styles from "./App.module.css"
 import { AddExpenseModal } from "./components/AddExpenseModal/AddExpenseModal"
 import { EditExpenseModal } from "./components/EditExpenseModal/EditExpenseModal"
 import { ExpenseList } from "./components/ExpenseList/ExpenseList"
+import { FilterButton } from "./components/FilterButton/FilterButton"
+import { FilterModal } from "./components/FilterModal/FilterModal"
 import { FilterTabs } from "./components/FilterTabs/FilterTabs"
-import { MonthFilter } from "./components/MonthFilter/MonthFilter"
 import { SummaryBar } from "./components/SummaryBar/SummaryBar"
 import { useExpenseFilters } from "./hooks/useExpenseFilters"
 import { useExpenses } from "./hooks/useExpenses"
 import type { IExpense } from "./types/expense.type"
 
 /**
- * 開いているモーダルの状態。追加と編集が同時に開く状態を型の上で作れないようにする。
+ * 開いているモーダルの状態。追加・編集・絞り込みが同時に開く状態を型の上で作れないようにする。
  * 編集は対象の記録を id で持つ。
  */
 type TModalState =
-  { type: "closed" } | { type: "add" } | { type: "edit"; id: string }
+  | { type: "closed" }
+  | { type: "add" }
+  | { type: "edit"; id: string }
+  | { type: "filter" }
 
 function App() {
   const {
@@ -34,6 +38,10 @@ function App() {
     monthKeys,
     activeMonth,
     setSelectedMonth,
+    colorFilter,
+    setColorFilter,
+    activeFilterCount,
+    resetFilters,
   } = useExpenseFilters(expenses)
 
   const [modal, setModal] = useState<TModalState>({ type: "closed" })
@@ -52,6 +60,10 @@ function App() {
     setModal({ type: "edit", id: expense.id })
   }
 
+  function handleOpenFilterModal() {
+    setModal({ type: "filter" })
+  }
+
   function handleCloseModal() {
     setModal({ type: "closed" })
   }
@@ -62,10 +74,9 @@ function App() {
         <div className={styles.summaryRow}>
           {/* サマリーは絞り込み前の全件で計算する（フィルタの影響を受けない） */}
           <SummaryBar expenses={expenses} />
-          <MonthFilter
-            value={activeMonth}
-            monthKeys={monthKeys}
-            onChange={setSelectedMonth}
+          <FilterButton
+            activeCount={activeFilterCount}
+            onClick={handleOpenFilterModal}
           />
         </div>
         <FilterTabs value={statusFilter} onChange={setStatusFilter} />
@@ -98,6 +109,18 @@ function App() {
 
       {modal.type === "add" && (
         <AddExpenseModal onSubmit={addExpense} onClose={handleCloseModal} />
+      )}
+
+      {modal.type === "filter" && (
+        <FilterModal
+          month={activeMonth}
+          monthKeys={monthKeys}
+          onMonthChange={setSelectedMonth}
+          color={colorFilter}
+          onColorChange={setColorFilter}
+          onReset={resetFilters}
+          onClose={handleCloseModal}
+        />
       )}
 
       {editingExpense && (

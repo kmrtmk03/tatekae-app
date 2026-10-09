@@ -3,6 +3,9 @@ import type { TMonthKey } from "./month.type"
 /** 記録に付けられるラベル色。選択肢は lib/expense-color.constants.ts の EXPENSE_COLOR_OPTIONS */
 export type TExpenseColor = "red" | "orange" | "green" | "blue" | "purple"
 
+/** 一覧のラベル色フィルタ。"all" は絞り込みなし */
+export type TExpenseColorFilter = "all" | TExpenseColor
+
 /** 立て替え記録 1 件 */
 export interface IExpense {
   /** 一意のID。crypto.randomUUID() で生成 */

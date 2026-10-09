@@ -1,8 +1,13 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
+import { ALL_COLORS } from "../lib/expense-color.constants"
 import { filterExpenses } from "../lib/filter.utils"
 import { ALL_MONTHS, listMonthKeys } from "../lib/month.utils"
 import { sortExpensesNewestFirst } from "../lib/sort.utils"
-import type { IExpense, TExpenseFilter } from "../types/expense.type"
+import type {
+  IExpense,
+  TExpenseColorFilter,
+  TExpenseFilter,
+} from "../types/expense.type"
 import type { TMonthFilter } from "../types/month.type"
 
 /** 記録が1件もないときの一覧メッセージ */
@@ -11,10 +16,10 @@ const EMPTY_MESSAGE_NO_RECORDS = "まだ記録がありません"
 const EMPTY_MESSAGE_NO_MATCH = "該当する記録がありません"
 
 /**
- * 一覧の絞り込み状態（月・清算状態）と、絞り込み後の記録を管理するフック。
+ * 一覧の絞り込み状態（月・ラベル色・清算状態）と、絞り込み後の記録を管理するフック。
  *
  * - 入力: useExpenses が返す全件の expenses
- * - 出力: ExpenseList に渡す、絞り込み後かつ新しい順に並べた filteredExpenses と、フィルタ UI（MonthFilter / FilterTabs）用の値・操作
+ * - 出力: ExpenseList に渡す、絞り込み後かつ新しい順に並べた filteredExpenses と、フィルタ UI（FilterModal / FilterTabs）用の値・操作
  *
  * MEMO: 未清算合計などのサマリーは絞り込み前の全件で計算するため、
  * SummaryBar には filteredExpenses ではなく元の expenses を渡すこと。
@@ -23,6 +28,9 @@ export function useExpenseFilters(expenses: IExpense[]) {
   const [statusFilter, setStatusFilter] = useState<TExpenseFilter>("all")
   // 利用者が選んだ月（ALL_MONTHS または 'YYYY-MM'）。実際に使う値は activeMonth
   const [selectedMonth, setSelectedMonth] = useState<TMonthFilter>(ALL_MONTHS)
+
+  const [colorFilter, setColorFilter] =
+    useState<TExpenseColorFilter>(ALL_COLORS)
 
   const monthKeys = listMonthKeys(expenses)
 
@@ -37,9 +45,20 @@ export function useExpenseFilters(expenses: IExpense[]) {
   const filteredExpenses = sortExpensesNewestFirst(
     filterExpenses(expenses, {
       month: activeMonth,
+      color: colorFilter,
       status: statusFilter,
     }),
   )
+
+  // 絞り込みモーダルで設定する条件（月・色）のうち、絞り込みが有効なものの数。ボタンのバッジに使う
+  const activeFilterCount =
+    (activeMonth !== ALL_MONTHS ? 1 : 0) + (colorFilter !== ALL_COLORS ? 1 : 0)
+
+  /** 月と色の絞り込みを解除する（清算状態はヘッダーのタブで操作するため対象外） */
+  const resetFilters = useCallback(() => {
+    setSelectedMonth(ALL_MONTHS)
+    setColorFilter(ALL_COLORS)
+  }, [])
 
   const emptyMessage =
     expenses.length === 0 ? EMPTY_MESSAGE_NO_RECORDS : EMPTY_MESSAGE_NO_MATCH
@@ -55,5 +74,11 @@ export function useExpenseFilters(expenses: IExpense[]) {
     monthKeys,
     activeMonth,
     setSelectedMonth,
+    // ラベル色フィルタ
+    colorFilter,
+    setColorFilter,
+    // 月・色フィルタをまとめて扱う（絞り込みモーダル用）
+    activeFilterCount,
+    resetFilters,
   }
 }
