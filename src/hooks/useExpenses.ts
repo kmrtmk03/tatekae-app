@@ -44,9 +44,12 @@ export function useExpenses() {
     setExpenses((prev) => [...prev, expense])
   }, [])
 
-  /** 指定 id の記録を部分更新する。該当 id がなければ何もしない */
+  /**
+   * 指定 id の記録の入力項目（日付・項目名・金額）を更新する。該当 id がなければ何もしない。
+   * id・createdAt はここでは書き換えさせない。清算状態の変更は toggleSettled を使う
+   */
   const handleUpdateExpense = useCallback(
-    (id: string, patch: Partial<Omit<IExpense, "id">>) => {
+    (id: string, patch: TExpenseInput) => {
       setExpenses((prev) =>
         prev.map((e) => (e.id === id ? { ...e, ...patch } : e)),
       )
