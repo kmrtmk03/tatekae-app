@@ -41,6 +41,7 @@ export function ExpenseForm({
         type="date"
         value={values.date}
         onChange={(e) => setDate(e.target.value)}
+        error={errors.date}
       />
 
       <FormField

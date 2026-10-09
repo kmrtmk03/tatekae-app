@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
 import { todayISO } from "../../../lib/date.utils"
-import { validateExpenseInput } from "../../../lib/validation.utils"
+import { parseExpenseInput } from "../../../lib/validation.utils"
 import type { IExpenseFormErrors } from "../../../lib/validation.utils"
 import type { TExpenseInput } from "../../../types/expense.type"
 
@@ -15,7 +15,7 @@ interface IUseExpenseFormParams {
 /**
  * 記録の追加・編集フォームの入力値・エラー・送信処理を管理するフック。
  *
- * - 入力中の値は文字列で持ち、送信時に検証してから TExpenseInput に変換して onSubmit へ渡す
+ * - 入力中の値は文字列で持ち、送信時に parseExpenseInput で検証・変換してから onSubmit へ渡す
  * - フォームは送信後に自動では閉じない。閉じるかどうかは呼び出し側（モーダル）が決める
  *
  * MEMO: モーダルを開くたびにマウントし直す前提のため、再オープン時は初期値に戻る。
@@ -35,11 +35,14 @@ export function useExpenseForm({
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    const nextErrors = validateExpenseInput(title, amount)
-    setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
+    const result = parseExpenseInput({ date, title, amount })
+    if (!result.ok) {
+      setErrors(result.errors)
+      return
+    }
 
-    onSubmit({ date, title: title.trim(), amount: Number(amount) })
+    setErrors({})
+    onSubmit(result.value)
   }
 
   return {
