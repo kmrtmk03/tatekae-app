@@ -60,7 +60,6 @@ function App() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.titleRow}>
-          <h1 className={styles.title}>立て替え管理</h1>
           <MonthFilter
             value={activeMonth}
             monthKeys={monthKeys}
