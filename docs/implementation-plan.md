@@ -35,6 +35,7 @@
 | ラベル色での絞り込み | 🔧 実装済み・実機未確認 | ブランチ `feat/expense-color-filter`。月と色を同じ「絞り込み」モーダルで設定。下記「ラベル色フィルタ」参照 |
 | Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
+| コンポーネント・フックのテスト追加 | 🔧 実装済み・レビュー待ち | ブランチ `feat/add-component-tests`。Testing Library と jsdom を導入し、lib の未テスト関数・フック・一部コンポーネントのテストを追加。下記「テストの追加」参照 |
 
 ### 当初計画からの変更点
 
@@ -334,8 +335,18 @@
 4. **`ColorSwatchGroup` を新設**: 見出し付きの色ボタン外枠を `ColorPicker` / `ColorFilter` で共用し、重複していた CSS を削除（`ColorPicker.module.css` は不要になり削除。色ボタンの間隔は 8px に統一）
 5. **`useExpenseFilters` の戻り値を明示列挙**: スプレッド展開をやめ、グループごとのコメント付きで返す
 6. **色の網羅性を型で保証**: `EXPENSE_COLOR_LABELS: Record<TExpenseColor, string>` を追加し、選択肢はその並び順リストから生成。並び順リストの網羅は `expense-color.constants.test.ts` で確認（`index.css` の色トークン・`[data-color]` ルールは手動同期のためコメントで明記）
-7. **テスト追加**: トグル・有効条件数は `filter.utils.ts` の純粋関数（`toggleColorSelection` / `countActiveFilters`）に出してテスト。`@testing-library` が未導入のためフック・モーダルの描画テストは**未追加**
+7. **テスト追加**: トグル・有効条件数は `filter.utils.ts` の純粋関数（`toggleColorSelection` / `countActiveFilters`）に出してテスト。`@testing-library` が未導入のためフック・モーダルの描画テストは未追加（後日「テストの追加」で一部導入）
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（38件）通過。ブラウザ（390×844）で、v2 の保存データが既定色で読み込まれること、赤で絞り込み中に青の記録を追加すると絞り込みが解除されて一覧に出ることを確認。iOS Safari 実機は未確認
+
+### テストの追加（ユーザー指示・ブランチ `feat/add-component-tests`・2026-10-09）
+- **依存追加**（devDependencies）: `@testing-library/react` / `@testing-library/dom` / `@testing-library/user-event` / `jsdom`。`jest-dom` は入れず、標準の assertion（`toBeTruthy` / `toBe` 等）で書いた
+- **環境の切り替え**: 既定は node のまま（lib のテストは従来どおり）。DOM が要るテストだけ、ファイル先頭に `// @vitest-environment jsdom` を書く。`vite.config.ts` は変更していない
+- **追加したテスト**（`pnpm test` は 15 ファイル・86 件）
+  - lib: `format.utils` / `sort.utils` / `summary.utils`
+  - hooks（`renderHook`）: `useModalState`（関数の参照安定化を含む）/ `useMonthColorFilters`（選択中の月が消えたときの補正）/ `useExpenseFilters`（組み合わせ絞り込み・空メッセージ・`revealNewExpense`）
+  - コンポーネント: `SummaryBar` / `ExpenseItem`（清算・編集・削除の確認ダイアログ）/ `ExpenseForm`（送信・検証エラー・初期値・キャンセル）
+- **未追加**: `Modal`（Escape・オーバーレイ）/ `MonthPicker` / `FilterModal` / `App` 全体の結合テスト、E2E（Playwright）。CSS Modules の見た目は対象外
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。ブラウザでの目視確認は不要な変更（アプリ本体のコードは未変更）
 
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
@@ -343,6 +354,7 @@
 - Vercel ダッシュボードで Production Branch を `release` にするか決めて設定し、`release` ブランチ作成後に自動ビルドの挙動（`release` のみビルドされること）を確認する
 - 日付→精算月の変更（ブランチ `feat/expense-month-only`）のレビュー・マージ。実機（iOS Safari）での月入力の確認
 - リファクタリング第2弾（ブランチ `refactor/item-id-and-update-type`）のレビュー・マージ。実機（iOS Safari）での確認は未実施
+- テスト未追加の `Modal` / `MonthPicker` / `FilterModal` / `App` 結合テストの追加を検討する
 - 必要なら D（`Modal` のアクセシビリティ改善）、`ExpenseItem` のチェックボックスのアクセシブルな名前を検討する
 - Phase 8の残り（月別グルーピングと月ごとの小計、一括清算、エクスポート/インポート）を進める
 
