@@ -36,6 +36,7 @@
 | Vercel のビルド対象を release のみに制限 | 🔧 設定追加済み・動作未検証 | `develop` に `vercel.json`（`ignoreCommand`）を追加。ダッシュボード設定と実際の挙動は未確認（下記「Vercel の自動ビルドを release ブランチのみにする設定」参照） |
 | リファクタリング第2弾 | ✅ 完了 | ブランチ `refactor/item-id-and-update-type`。A-1〜A-4・B-1〜B-4・C を実施。D（Vitest 導入・Modal のアクセシビリティ改善）は未実施（下記「リファクタリング第2弾」参照） |
 | コンポーネント・フックのテスト追加 | 🔧 実装済み・レビュー待ち | ブランチ `feat/add-component-tests`。Testing Library と jsdom を導入し、lib の未テスト関数・フック・一部コンポーネントのテストを追加。下記「テストの追加」参照 |
+| `lib/` のドメイン別整理 | 🔧 実装済み・レビュー待ち | ブランチ `refactor/organize-lib`（`feat/add-component-tests` から分岐）。下記「lib のドメイン別整理」参照 |
 
 ### 当初計画からの変更点
 
@@ -348,6 +349,15 @@
 - **未追加**: `Modal`（Escape・オーバーレイ）/ `MonthPicker` / `FilterModal` / `App` 全体の結合テスト、E2E（Playwright）。CSS Modules の見た目は対象外
 - 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。ブラウザでの目視確認は不要な変更（アプリ本体のコードは未変更）
 
+### lib のドメイン別整理（ユーザー指示・ブランチ `refactor/organize-lib`・2026-10-09）
+- フラットだった `lib/`（実装 9 ファイル＋テスト）を、機能のまとまりでサブディレクトリに分けた。ファイルの中身は変更せず、移動（`git mv`）と import パスの付け替えのみ
+  - `lib/expense/`: `expense-color.constants` / `filter.utils` / `sort.utils` / `summary.utils` / `validation.utils`
+  - `lib/storage/`: `storage.utils` / `expense.store`
+  - `lib/` 直下: `month.utils` / `format.utils`（`expense` と `storage` の両方から使われるため、どちらにも入れていない）
+- テストは対象と同じディレクトリへ移動。バレル（`index.ts`）は作っていない
+- `CLAUDE.md` / `.claude/rules/implementation.md` / 本書の構成図のパス表記を更新。過去の作業記録（各リファクタリングの節）の旧パスは当時の記録として残している
+- 検証: `tsc -b` / `lint` / `format:check` / `build` / `pnpm test`（86件）通過。アプリの挙動は変えていない
+
 ### 次にやること
 - ラベル色フィルタの実機（iOS Safari）確認
 - ラベル色の目視確認（追加フォームの色選択、一覧の帯、ダークモード）
@@ -473,18 +483,20 @@ tatekae-app/
 │   │   ├── FilterTabs/            # 清算状態フィルタ
 │   │   └── MonthSelect/           # 月の絞り込みセレクト（絞り込みモーダル内）
 │   ├── hooks/
-│   │   ├── useExpenses.ts         # 記録の取得と操作（lib/expense.store.ts を購読する薄いラッパー）
+│   │   ├── useExpenses.ts         # 記録の取得と操作（lib/storage/expense.store.ts を購読する薄いラッパー）
 │   │   └── useExpenseFilters.ts   # 月・清算状態の絞り込み状態と、絞り込み後・新しい順の結果
 │   ├── lib/
-│   │   ├── storage.utils.ts       # localStorage の読み書き（型ガードで検証）
-│   │   ├── expense.store.ts       # 記録の保持・保存（変更操作の中で保存。useSyncExternalStore 用）
-│   │   ├── format.utils.ts        # 金額・日付・月の整形
-│   │   ├── summary.utils.ts       # 合計・件数計算などの純粋関数
-│   │   ├── date.utils.ts          # 今日の日付・日付の分解
+│   │   ├── format.utils.ts        # 金額・月の整形
 │   │   ├── month.utils.ts         # 月キーの取得・一覧化・型ガード
-│   │   ├── sort.utils.ts          # 記録の並べ替え（新しい順）
-│   │   ├── filter.utils.ts        # 記録の絞り込み（純粋関数）
-│   │   └── validation.utils.ts    # フォーム入力の検証・変換（parseExpenseInput）
+│   │   ├── expense/
+│   │   │   ├── expense-color.constants.ts # ラベル色の定数・選択肢
+│   │   │   ├── filter.utils.ts    # 記録の絞り込み（純粋関数）
+│   │   │   ├── sort.utils.ts      # 記録の並べ替え（新しい順）
+│   │   │   ├── summary.utils.ts   # 合計・件数計算などの純粋関数
+│   │   │   └── validation.utils.ts # フォーム入力の検証・変換（parseExpenseInput）
+│   │   └── storage/
+│   │       ├── storage.utils.ts   # localStorage の読み書き（型ガードで検証）
+│   │       └── expense.store.ts   # 記録の保持・保存（変更操作の中で保存。useSyncExternalStore 用）
 │   ├── types/
 │   │   ├── expense.type.ts        # IExpense / TExpenseInput / TExpenseFilter
 │   │   └── month.type.ts          # TMonthKey / TMonthFilter
@@ -499,8 +511,8 @@ tatekae-app/
 └── README.md
 ```
 
-**方針**: 「保存先に依存する処理」を `lib/storage.utils.ts` の1ファイルに閉じ込める。
-記録の保持・保存は `lib/expense.store.ts` が担い、コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのは `storage.utils.ts` と `expense.store.ts` で済む。
+**方針**: 「保存先に依存する処理」を `lib/storage/storage.utils.ts` の1ファイルに閉じ込める。
+記録の保持・保存は `lib/storage/expense.store.ts` が担い、コンポーネントは `useExpenses` 経由でしかデータに触らないため、保存方法を変える場合に書き換えるのは `storage.utils.ts` と `expense.store.ts` で済む。
 
 ---
 

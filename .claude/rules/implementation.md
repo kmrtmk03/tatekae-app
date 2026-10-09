@@ -10,7 +10,10 @@
 src/
 ├── components/<Name>/<Name>.tsx + <Name>.module.css   # 1 コンポーネント 1 ディレクトリ
 ├── hooks/        # useXxx.ts（状態と操作を返す。UI は返さない）
-├── lib/          # *.utils.ts（副作用のない純粋関数 / 保存先に依存する処理）
+├── lib/          # *.utils.ts（副作用のない純粋関数 / 保存先に依存する処理）。ドメイン別のサブディレクトリに分ける
+│   ├── expense/  # 記録の絞り込み・並べ替え・集計・検証・ラベル色の定数
+│   ├── storage/  # localStorage の読み書き（storage.utils）と記録のストア（expense.store）
+│   └── *.utils.ts  # 複数ドメインから使う月・整形（month.utils / format.utils）はルート直下
 ├── types/        # *.type.ts（複数箇所で参照される型）
 ├── App.tsx / main.tsx / index.css
 ```
@@ -18,6 +21,7 @@ src/
 - コンポーネントは **tsx と `module.css` を同じディレクトリに置く**。CSS が無いコンポーネントも同じ構成にする
 - `index.ts`（バレル）は**作らない**。import は `../ExpenseForm/ExpenseForm` のようにファイルを直接指す
 - 他コンポーネントの CSS を import しない。共通の見た目が必要なら共通コンポーネント（例: `Modal`）にする
+- `lib` のサブディレクトリは機能のまとまりで分ける。複数のまとまりから使うものはルート直下に置く。移動してもバレルは作らず、import はファイルを直接指す
 - 共有ディレクトリ（`hooks` / `lib` / `types`）へ移すのは、複数箇所で実際に使われてから。先回りの共通化はしない
 - ファイル接尾辞: 型は `*.type.ts`、純粋関数・ユーティリティは `*.utils.ts`、定数が増えたら `*.constants.ts`
 
@@ -32,7 +36,7 @@ src/
 
 ## 外部データの扱い
 
-- 保存先（localStorage）に依存する処理は **`lib/storage.utils.ts` に閉じ込める**。記録の保持・保存は `lib/expense.store.ts`（`useSyncExternalStore` 用のストア）が行い、保存は変更操作の中だけで呼ぶ（`useEffect` で state の変更を保存しない）。コンポーネントは `useExpenses` 経由でしかデータに触らない
+- 保存先（localStorage）に依存する処理は **`lib/storage/storage.utils.ts` に閉じ込める**。記録の保持・保存は `lib/storage/expense.store.ts`（`useSyncExternalStore` 用のストア）が行い、保存は変更操作の中だけで呼ぶ（`useEffect` で state の変更を保存しない）。コンポーネントは `useExpenses` 経由でしかデータに触らない
 - 読み込んだ値は `unknown` で受け、`isXxx(value): value is T` の型ガードで検証してから使う（`JSON.parse(...) as T` は禁止）
 - 型ガードには「なぜその検証が必要か」をコメントで残す
 - 読み込み失敗や不正データは空配列へフォールバックし、例外を投げない。保存失敗は握りつぶさず `saveError` として画面に出す
@@ -51,7 +55,7 @@ src/
 ## 仕様上の不変条件（変更するときは要確認）
 
 - **`SummaryBar` には絞り込み前の全件（`expenses`）を渡す**。月・清算状態フィルタの影響を受けない（F-04「未清算合計を常に確認できる」を優先）
-- 一覧の並び順は精算月の降順、同月なら `createdAt` の降順（`useExpenseFilters` が `lib/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
+- 一覧の並び順は精算月の降順、同月なら `createdAt` の降順（`useExpenseFilters` が `lib/expense/sort.utils.ts` の `sortExpensesNewestFirst` で絞り込み後に並べ替え、`ExpenseList` は渡された順に表示する）
 - 追加・編集は、保存成功時にモーダルが自動で閉じる。キャンセル・×・Escape・オーバーレイのクリックは変更を破棄して閉じる
 - フィルタの選択状態（月・清算状態）は永続化しない（リロードで初期値に戻る）
 
@@ -80,7 +84,7 @@ pnpm run build            # ビルド
 pnpm test                 # Vitest（lib・hooks・一部コンポーネント）
 ```
 
-- `pnpm run lint` は警告 0 件の状態を保つ。新しい警告を増やさない（以前許容していた `useExpenses.ts` の `react(set-state-in-effect)` 警告は、保存を `lib/expense.store.ts` へ移して解消済み）
+- `pnpm run lint` は警告 0 件の状態を保つ。新しい警告を増やさない（以前許容していた `useExpenses.ts` の `react(set-state-in-effect)` 警告は、保存を `lib/storage/expense.store.ts` へ移して解消済み）
 - 自動テストは Vitest（`pnpm test`）。対象は `lib/*.utils.ts` の純粋関数と保存処理、hooks（`renderHook`）、一部コンポーネント（Testing Library）。`*.test.ts(x)` を同じディレクトリに置く。既定の環境は node で、DOM が要るテストはファイル先頭に `// @vitest-environment jsdom` を書き、`afterEach(cleanup)` で後始末する。UI の挙動の確認は `pnpm run dev` + ブラウザ（モバイル幅 390×844）で行い、実機（iOS Safari）で確認できていない項目は「未検証」と明記する
 - 開発サーバーは LAN 公開済み（`vite.config.ts` の `server.host: true`）。実機確認は `http://<PCのIP>:5173` で行う。HTTP のため Service Worker（PWA）は動かない
 
